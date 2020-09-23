@@ -1,0 +1,5 @@
+name: Minions-Miner
+main: com.thecrappiest.minions.miner.MinerCore
+version: 0.0.1
+api-version: 1.16
+depend: [Minions-Revamped]

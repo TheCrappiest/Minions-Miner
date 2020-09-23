@@ -1,0 +1,92 @@
+#==================================#
+# Minions-Revamped By TheCrappiest #
+#         Miner Settings           #
+#==================================#
+
+# Default movement speed - The default speed the minion takes to move its arm to the next pose.
+# Doubles of tenths can be used. Ex; [.1, .2, .3 and so on.] .1 is equivalent to 10 milliseconds. 
+Default_Movement_Speed: 1 
+
+# Movement_Speed_Permissions - Editable permissions for the speed minions move at.
+# If the player does not have any of the listed permission nodes "Default_Movement_Speed" will be used.
+# You can add or remove any of the contents from this list.
+# The first part needs to be a permission node while the second part needs to be a value for the speed.
+# Example;
+#
+#  "Minions.permission.speed.default" is the permission node.
+#  "3" is the speed value.
+#  When adding the permission node to the players, DO NOT, add the value.
+#
+#  Movement_Speed_Permissions:
+#    - 'Minions.permission.speed.default 3'
+Movement_Speed_Permissions:
+  - 'Minions.permission.speed.default 10'
+  - 'Minions.permission.speed.donor 5'
+  - 'Minions.permission.speed.premium 1'
+
+# Keep_Chunk_Loaded - Should the chunk this minion is located in stay loaded?
+# If the chunk unloaded the plugin can not guarantee the minion will complete its tasks or even preform its movements.
+Keep_Chunk_Loaded: true
+
+# Stay_Loaded - Should this minion stay loaded when its owner leaves the server?
+Stay_Loaded: true
+
+# Auto_Load - Should this minion load when the server starts?
+Auto_Load: true
+
+# Work_Offline - Should this minion complete tasks while its owner is offline?
+# This option is ignored if "Stay_Loaded" is set to false.
+Work_Offline: false
+
+# Offline_Movement - Should minion be allowed to move when its owner is offline?
+# This option is ignored if "Work_Offline" is set to true.
+Offline_Movement: false
+
+# Redstone - Configurable options for allowing redstone to affect this minion.
+# ***WARNING*** This section can cause lag. Use at you're own risk. ***WARNING***
+# Lever - Should activated levers disable this minion?
+# Powered_Blocks - Should powered blocks such as; redstone blocks and redstone torches disable this minion?
+# Directly_Powered - Should the block where the minion is standing be powered to disable the minion?
+# Indirectly_Powered - Should the blocks around this minion be powered to disable  it?
+Redstone:
+  Lever: false
+  Powered_Blocks: false
+  Directly_Powered: false
+  Indirectly_Powered: false
+
+# Health - Health settings for the miner minion.
+Health:
+  Use: false
+  Default_Amount: 100
+  Max_Amount: 100
+  Die_On_Last_Health: true
+      
+# Hunger - Hunger settings for the miner minion.      
+Hunger:
+  Use: false
+  Default_Amount: 20
+  Max_Amount: 20
+
+# Minable - what blocks can be mined using this minion?
+Minable:
+  - COBBLESTONE
+  - STONE
+  - COAL_ORE
+  - IRON_ORE
+  - GOLD_ORE
+  - LAPIS_ORE
+  - REDSTONE_ORE
+  - DIAMOND_ORE
+  - EMERALD_ORE
+  
+# Bottle exp - Shold the minion bottle the experience it collects?
+Bottle_EXP: false
+
+# Exp blocks - What blocks drop exp and how much should they drop?
+EXP_Blocks:
+  DIAMOND_ORE: 5
+  EMERALD_ORE: 7
+  NETHER_QUARTZ_ORE: 8
+  COAL_ORE: 3
+  LAPIS_ORE: 1
+  REDSTONE_ORE: 2
