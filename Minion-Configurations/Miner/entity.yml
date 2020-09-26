@@ -34,6 +34,9 @@ Held_Item:
 Show_Name: true
 Entity_Name: '&e&lMiner Minion'
 
+# Can the player give the minion a holdable item?
+Give_Item_Permission: 'Minions.miner.give_newitem'
+
 # What items can be given to this minion to hold?
 Holdable_Materials:
   - 'IRON_PICKAXE'

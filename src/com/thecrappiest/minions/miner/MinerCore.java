@@ -34,6 +34,7 @@ public class MinerCore extends JavaPlugin {
 		// * Sets instance
 		instance = this;
 		
+		// * Loads the configurations used by miner minions
 		ConsoleOutput.info("Configuration File Loader:");
 		ConsoleOutput.info(" ");
 		ConsoleOutput.info("Miner Minion Configurations:");
@@ -42,6 +43,7 @@ public class MinerCore extends JavaPlugin {
 		MinerConfigurations.getInstance().loadConfig("item");
 		MinerConfigurations.getInstance().loadConfig("settings");
 		
+		// * Loads all listeners used by the plugin
 		new GiveCommand(this);
 		new CreateMinionEntity(this);
 		new LastPose(this);
@@ -58,6 +60,7 @@ public class MinerCore extends JavaPlugin {
 	// * Method runs when plugin disables
 	public void onDisable() {
 		
+		// * Saves all data for loaded miners
 		for(Minion minion : MinerData.getInstance().miners.keySet()) {
 			SaveMiner.saveMinion(minion, com.thecrappiest.minions.methods.SaveMinion.save(minion));
 		}

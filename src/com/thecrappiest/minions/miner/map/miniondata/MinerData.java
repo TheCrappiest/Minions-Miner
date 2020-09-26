@@ -16,8 +16,10 @@ public class MinerData {
 		return instance;
 	}
 	
+	// * Stored data of miner objects
 	public Map<Minion, Miner> miners = new HashMap<>();
 	
+	// * Returns a miner object if stored
 	public Miner getMinerFromMinion(Minion minion) {
 		return miners.entrySet().stream().filter(entry -> entry.getKey().equals(minion)).findAny().orElse(null).getValue();
 	}

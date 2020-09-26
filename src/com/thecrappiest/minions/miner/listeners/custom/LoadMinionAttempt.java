@@ -28,14 +28,18 @@ public class LoadMinionAttempt implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onLoadAttempt(LoadMinionAttemptEvent event) {
-		if(event.isCancelled()) {return;}
+		// * Tests if minion is a miner
 		if(!event.getMinionType().equalsIgnoreCase("Miner")) {return;}
 		
+		// * Sets config variable
 		YamlConfiguration entitySettings = MinerConfigurations.getInstance().getYaml("settings");
+		
+		// * Boolean used to tell even if minion should be created
 		boolean createMinion = true;
 		
+		// * Sets the location variable
 		Location location = null;
 		if(event.getPath() != null) {
 			String path = event.getPath().split("\\.")[1];
@@ -61,7 +65,7 @@ public class LoadMinionAttempt implements Listener {
 					return;
 				}
 				
-				// * If minion is "stay loaded" readd to movement thread.
+				// * If minion is "stay loaded" re-add to movement thread.
 				if(entitySettings.getBoolean("Stay_Loaded")) {
 					createMinion = false;
 					
@@ -76,6 +80,7 @@ public class LoadMinionAttempt implements Listener {
 		}
 
 		if(createMinion) {
+			// * Creates and runs the CreateMinionEntityEvent
 			CreateMinionEntityEvent createminionentity = createEvent(event.getPlayer(), event.getUUID(), event.getMinionType(), event.getPath(), event.getData(), event.shouldMove());
 			new BukkitRunnable() {
 				public void run() {

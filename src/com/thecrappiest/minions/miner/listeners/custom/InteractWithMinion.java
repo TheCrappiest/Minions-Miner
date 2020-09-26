@@ -2,6 +2,7 @@ package com.thecrappiest.minions.miner.listeners.custom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,29 +24,40 @@ public class InteractWithMinion implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onInteractWithMinion(InteractWithMinionEvent event) {
 		Player player = event.getPlayer();
 		Minion minion = event.getMinion();
 		ItemStack interactionItem = event.getInteractionItem();
 		
-		if(event.isCancelled()) {return;}
+		// * Test if minion type is a miner
 		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
 		
+		// * Tests if minion belongs to player
+		if(!minion.getOwner().equals(player.getUniqueId())) {return;}
+		
 		if(!player.isSneaking()) {
-			
+			// * Tests if player is holding an item
 			if(interactionItem == null || (interactionItem != null && interactionItem.getType() == Material.AIR)) {
-				if(minion.getType().equalsIgnoreCase("MINER")) {
-			    	GenerateMinionInventory generate_minion_inventory_thread = new GenerateMinionInventory();
-				    generate_minion_inventory_thread.setMinion(minion);
-				    generate_minion_inventory_thread.setPlayer(player);
-				    generate_minion_inventory_thread.setYaml(MinerConfigurations.getInstance().getYaml("inventory"));
-				    Thread thread = new Thread(generate_minion_inventory_thread);
-				    generate_minion_inventory_thread.startThread(thread);
-			    }
+				
+				// * Creates and sets variables of the inventory creation thread
+				GenerateMinionInventory generate_minion_inventory_thread = new GenerateMinionInventory();
+			    generate_minion_inventory_thread.setMinion(minion);
+			    generate_minion_inventory_thread.setPlayer(player);
+			    generate_minion_inventory_thread.setYaml(MinerConfigurations.getInstance().getYaml("inventory"));
+			    
+			    // * Creates and starts the inventory generation thread
+			    Thread thread = new Thread(generate_minion_inventory_thread);
+			    generate_minion_inventory_thread.startThread(thread);
+			    
 			}else if(interactionItem != null && interactionItem.getType() != Material.AIR) {
+				YamlConfiguration yaml = MinerConfigurations.getInstance().getYaml("entity");
+				
+				// * Checks if the player has permission to change the minions item
+				if(!player.hasPermission(yaml.getString("Give_Item_Permission"))) {return;}
+				
 				// * Tests if the interaction item is allowed to be held by the minion
-				if(MinerConfigurations.getInstance().getYaml("entity").getStringList("Holdable_Materials").contains(interactionItem.getType().name())) {
+				if(yaml.getStringList("Holdable_Materials").contains(interactionItem.getType().name())) {
 					ArmorStand as = (ArmorStand) minion.getEntity();
 					
 					// * If minion is holding a non default item it will be given to the player

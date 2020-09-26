@@ -45,7 +45,7 @@ public class CreateMinionEntity implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onCreateMinionEntity(CreateMinionEntityEvent event) {
 		Player player = event.getPlayer();
 		String minionType = event.getMinionType();
@@ -81,6 +81,7 @@ public class CreateMinionEntity implements Listener {
 		    return;
 		}
 		
+		// * Removing armorstands in the same block as this minion
 		if(!location.getWorld().getNearbyEntities(location, .5, .5, .5).isEmpty()) {
 			location.getWorld().getNearbyEntities(location,.5,.5,.5).forEach(entity -> {
 				if(entity instanceof ArmorStand) {
@@ -89,50 +90,60 @@ public class CreateMinionEntity implements Listener {
 			});
 		}
 		
-		if(event.isCancelled()) {return;}
-		
+		// * Config variables
 		YamlConfiguration entityData = MinerConfigurations.getInstance().getYaml("entity");
 		YamlConfiguration entitySettings = MinerConfigurations.getInstance().getYaml("settings");
 		
+		// * Creates the minion entity
 		ArmorStand armorstand = (ArmorStand) MinionEntityMethods.generateMinionEntity(location);
 		
+		// * Sets the size of the entity
 		if(entityData.getString("Size").equalsIgnoreCase("small")) {
 			armorstand.setSmall(true);
 		}else {
 			armorstand.setSmall(false);
 		}
 		
+		// * Sets the helmet
 		armorstand.getEquipment().setHelmet(
 				ItemNBT.getNBTUtils().addNBTTagString(
 						SkullCreation.getInstance().createSkullItem(entityData.getString("Head").replace("%minion_owner%", ownerName))
 						, "MinionsHelmet", "DEFAULT", null));
 		
+		// * Sets the chestplate
 		armorstand.getEquipment().setChestplate(
 				ItemNBT.getNBTUtils().addNBTTagString(
 						ItemCreation.createItem(entityData.getConfigurationSection("Chestplate"), null)
 						, "MinionsChestplate", "DEFAULT", null));
 		
+		// * Sets the leggings
 		armorstand.getEquipment().setLeggings(
 				ItemNBT.getNBTUtils().addNBTTagString(
 						ItemCreation.createItem(entityData.getConfigurationSection("Leggings"), null)
 						, "MinionsLeggings", "DEFAULT", null));
 		
+		// * Sets the boots
 		armorstand.getEquipment().setBoots(
 				ItemNBT.getNBTUtils().addNBTTagString(
 						ItemCreation.createItem(entityData.getConfigurationSection("Boots"), null)
 						, "MinionsBoots", "DEFAULT", null));
 		
+		// * Sets the held item
 		armorstand.getEquipment().setItemInMainHand(
 				ItemNBT.getNBTUtils().addNBTTagString(
 						ItemCreation.createItem(entityData.getConfigurationSection("Held_Item"), null)
 						, "MinionsHeldItem", "DEFAULT", null));
 		
+		// * Sets the display name of the minion entity
 		armorstand.setCustomName(Messages.util().addColor(entityData.getString("Entity_Name")));
+		// * Sets whether the displayname is visible or not
 		armorstand.setCustomNameVisible(entityData.getBoolean("Show_Name"));
 		
+		// * Creates a the minion object and adds it to the data map
 		Minion miner = new Minion(armorstand, armorstand.getUniqueId(), uuid, "MINER");
 		MinionData.getInstance().loadedMinions.put(armorstand.getUniqueId(), miner);
 		
+		// * Setting default placeholders for miner
 		miner.setPlaceHolder("%minion_blocksmined%", "0");
 		miner.setPlaceHolder("%minion_collectedexp%", "0");
 		
@@ -145,6 +156,7 @@ public class CreateMinionEntity implements Listener {
 			}
 		}
 		
+		// * Adds minion to a movement task if shouldMove is true
 		if(event.shouldMove()) {
 			MovementThread movementThread = ThreadsHolder.getInstance().getMovementThread(miner);
 			if(!movementThread.getMinionDelays().containsKey(miner)) {
@@ -164,30 +176,51 @@ public class CreateMinionEntity implements Listener {
 		miner.getPlaceHolders();
 		miner.setMovementDelayPlaceholder();
 		
+		// * Creates a new miner object and adds it to the miners map
+		Miner minerOBJ = new Miner(miner.getEntity(), miner.getEntityID(), miner.getOwner(), miner.getType());
+		MinerData.getInstance().miners.put(miner, minerOBJ);
+		
 		ItemStack minionItem = event.getMinionItem();
+		
+		// * Tests if minion was created based off an item
 		if(minionItem != null) {
 			ItemNBT nbt = ItemNBT.getNBTUtils();
+			// * Sets Health from NBT
 			if(nbt.itemContainsNBTTag(minionItem, "Health")) {
 				miner.setHealth(Integer.valueOf(nbt.getStringFromNBT(minionItem, "Health")));
 				miner.setPlaceHolder("%minion_health%", String.valueOf(miner.getHealth()));
 			}
+			
+			// * Sets MaxHealth from NBT
 			if(nbt.itemContainsNBTTag(minionItem, "MaxHealth")) {
 				miner.setMaxHealth(Integer.valueOf(nbt.getStringFromNBT(minionItem, "MaxHealth")));
 				miner.setPlaceHolder("%minion_max_health%", String.valueOf(miner.getMaxHealth()));
 			}
+			
+			// * Sets Hunger from NBT
 			if(nbt.itemContainsNBTTag(minionItem, "Hunger")) {
 				miner.setHunger(Integer.valueOf(nbt.getStringFromNBT(minionItem, "Hunger")));
 				miner.setPlaceHolder("%minion_hunger%", String.valueOf(miner.getHunger()));
 			}
+			
+			// * Sets MaxHealth from NBT
 			if(nbt.itemContainsNBTTag(minionItem, "MaxHunger")) {
 				miner.setHunger(Integer.valueOf(nbt.getStringFromNBT(minionItem, "MaxHunger")));
 				miner.setPlaceHolder("%minion_max_hunger%", String.valueOf(miner.getMaxHunger()));
 			}
+			
+			// * Sets BlocksMined from NBT
+			if(ItemNBT.getNBTUtils().itemContainsNBTTag(minionItem, "BlocksMined")) {
+	    		miner.setPlaceHolder("%minion_blocksmined%", String.valueOf(nbt.getStringFromNBT(minionItem, "BlocksMined")));
+	    		minerOBJ.setBlocksMined(Integer.valueOf(nbt.getStringFromNBT(minionItem, "BlocksMined")));
+	    	}
+			
+			// * Sets CollectedEXP from NBT
+	    	if(ItemNBT.getNBTUtils().itemContainsNBTTag(minionItem, "CollectedEXP")) {
+	    		miner.setPlaceHolder("%minion_collectedexp%", String.valueOf(nbt.getStringFromNBT(minionItem, "CollectedEXP")));
+	    		minerOBJ.setCollectedEXP(Integer.valueOf(nbt.getStringFromNBT(minionItem, "CollectedEXP")));
+	    	}
 		}
-		
-		// * Creates a new miner object and adds it to the miners map
-		Miner minerOBJ = new Miner(miner.getEntity(), miner.getEntityID(), miner.getOwner(), miner.getType());
-		MinerData.getInstance().miners.put(miner, minerOBJ);
 		
 		// * Adds blocks that give exp to map
 	    if(entitySettings.isSet("EXP_Blocks") && !entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false).isEmpty()) {
@@ -211,18 +244,6 @@ public class CreateMinionEntity implements Listener {
 	    
 	    // * Sets whether or not exp should be bottled
 	    minerOBJ.bottleEXP(entitySettings.getBoolean("Bottle_EXP"));
-	    
-	    if(event.getMinionItem() != null) {
-	    	ItemStack item = event.getMinionItem();
-	    	if(ItemNBT.getNBTUtils().itemContainsNBTTag(item, "BlocksMined")) {
-	    		miner.setPlaceHolder("%minion_blocksmined%", String.valueOf(ItemNBT.getNBTUtils().getStringFromNBT(item, "BlocksMined")));
-	    		minerOBJ.setBlocksMined(Integer.valueOf(ItemNBT.getNBTUtils().getStringFromNBT(item, "BlocksMined")));
-	    	}
-	    	if(ItemNBT.getNBTUtils().itemContainsNBTTag(item, "CollectedEXP")) {
-	    		miner.setPlaceHolder("%minion_collectedexp%", String.valueOf(ItemNBT.getNBTUtils().getStringFromNBT(item, "CollectedEXP")));
-	    		minerOBJ.setCollectedEXP(Integer.valueOf(ItemNBT.getNBTUtils().getStringFromNBT(item, "CollectedEXP")));
-	    	}
-	    }
 	    
 		new BukkitRunnable() {
 			public void run() {
@@ -261,21 +282,25 @@ public class CreateMinionEntity implements Listener {
 							miner.setPlaceHolder("%minion_hunger%", String.valueOf(miner.getHunger()));
 						}
 						
+						// * Checks for saved link chest
 						if(jsonData.containsKey("Link_Chest")) {
 							Location linkChest = ConversionMethods.getLocationFromString(jsonData.get("Link_Chest").toString());
 							miner.addLinkedChest("Link_Chest", linkChest);
 						}
 						
+						// * Checks for saved linked food chest
 						if(jsonData.containsKey("Link_Food_Chest")) {
 							Location linkChest = ConversionMethods.getLocationFromString(jsonData.get("Link_Food_Chest").toString());
 							miner.addLinkedChest("Link_Food_Chest", linkChest);
 						}
 						
+						// * Checks for saved collectedexp
 						if(jsonData.containsKey("CollectedEXP")) {
 							minerOBJ.setCollectedEXP(Integer.valueOf(jsonData.get("CollectedEXP").toString()));
 							miner.setPlaceHolder("%minion_collectedexp%", String.valueOf(minerOBJ.getCollectedEXP()));
 						}
 						
+						// * Checks for saved blocks mined
 						if(jsonData.containsKey("BlocksMined")) {
 							minerOBJ.setBlocksMined(Integer.valueOf(jsonData.get("BlocksMined").toString()));
 							miner.setPlaceHolder("%minion_blocksmined%", String.valueOf(minerOBJ.getBlocksMined()));

@@ -26,17 +26,18 @@ public class PickupMinion implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onPickupMinion(PickupMinionEvent event) {
 		Player player = event.getPlayer();
 		Minion minion = event.getMinion();
-		// Location location = event.getLocation();
 		
-		if(event.isCancelled()) {return;}
+		// * Tests if minion is a miner
 		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
 		
+		// * Creates map that will have data stored to it
 		Map<String, String> nbtTags = new HashMap<>();
 		
+		// * Tests if health should be added to stored data
 		if(minion.useHealth() && minion.getHealth() != -1) {
 			nbtTags.put("Health", String.valueOf(minion.getHealth()));
 			if(minion.getMaxHealth() != -1) {
@@ -44,6 +45,7 @@ public class PickupMinion implements Listener {
 			}
 		}
 		
+		// * Tests if hunger should be added to stored data
 		if(minion.useHunger() && minion.getHunger() != -1) {
 			nbtTags.put("Hunger", String.valueOf(minion.getHunger()));
 			if(minion.getMaxHunger() != -1) {
@@ -51,15 +53,20 @@ public class PickupMinion implements Listener {
 			}
 		}
 		
+		// * Gets miner object and stores the miner object data
 		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
 		nbtTags.put("BlocksMined", String.valueOf(miner.getBlocksMined()));
 		nbtTags.put("CollectedEXP", String.valueOf(miner.getCollectedEXP()));
 		
+		// * Adds the minion item to the players inventory
 		player.getInventory().addItem(
 				ItemNBT.getNBTUtils().addNBTTagString(
-						ItemCreation.createItem(MinerConfigurations.getInstance().getYaml("item").getConfigurationSection(""), minion.getPlaceHolders())
+						ItemCreation.createItem(
+								MinerConfigurations.getInstance().getYaml("item").getConfigurationSection("")
+								, minion.getPlaceHolders())
 						, "MinionType", "Miner", nbtTags));
 		
+		// * Unloads and removes the miner and minion data
 		MinionData.getInstance().unloadMinion(minion, true);
 		MinerData.getInstance().miners.remove(minion);
 	}

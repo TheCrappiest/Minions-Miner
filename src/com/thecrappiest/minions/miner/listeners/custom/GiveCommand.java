@@ -52,9 +52,8 @@ public class GiveCommand implements Listener {
 		placeholders.put("%player%", event.getPlayer().getName());
 		placeholders.put("%sender%", event.getSender().getName());
 		placeholders.put("%amount_given%", String.valueOf(amount));
-		placeholders.put("%blocks_mined%", String.valueOf(0));
-		
-		// Sends messages to the sender and reciever
+
+		// Sends messages to the sender and receiver
 		MessageSender.sendMessageFromData(null, sender, "Administrative.Give.Sender", placeholders);
 		MessageSender.sendMessageFromData(player, null, "Administrative.Give.Reciever", placeholders);
 	}

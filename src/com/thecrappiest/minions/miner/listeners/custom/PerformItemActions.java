@@ -21,10 +21,13 @@ public class PerformItemActions implements Listener {
 	
 	@EventHandler
 	public void onItemAction(PerformItemActionsEvent event) {
+		
+		// * Sets variables used by the event
 		Minion minion = event.getMinion();
 		Player player = event.getPlayer();
 		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
 		
+		// * Creates switch for actions used
 		switch(event.getAction().toUpperCase()) {
 		case "COLLECT_EXP":
 			if(miner.getCollectedEXP() > 0) {

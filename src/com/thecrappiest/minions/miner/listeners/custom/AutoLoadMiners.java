@@ -28,27 +28,37 @@ public class AutoLoadMiners implements Listener {
 	
 	@EventHandler
 	public void onAutoLoad(AutoLoadMinionsEvent event) {
+		// * Settings yaml variable
         YamlConfiguration entitySettings = MinerConfigurations.getInstance().getYaml("settings");
 		
-		if(entitySettings.getBoolean("Auto_Load")) {
-			File userDataFolder = new File(Core.getInstance().getDataFolder()+sChar+"UserStorage");
-			for(File userData : userDataFolder.listFiles()) {
-				String uuid = userData.getName().toString().replace(".yml", "");
-				YamlConfiguration yaml = UserConfigurations.getInstance().getYaml(UUID.fromString(uuid));
-				if(Bukkit.getPlayer(UUID.fromString(uuid)) == null) {
-					if(!yaml.getConfigurationSection("").getKeys(false).isEmpty()) {
-						for(String minionData : yaml.getConfigurationSection("MINER").getKeys(false)) {
-							String path = "MINER."+minionData;
-							String data = yaml.getString(path);
-							
-							boolean shouldMove = (entitySettings.getBoolean("Work_Offline") || entitySettings.getBoolean("Offline_Movement")) ? true: false;
-							new BukkitRunnable() {
-								public void run() {
-									LoadMinionAttemptEvent loadminionattempt = new LoadMinionAttemptEvent(UUID.fromString(uuid), "Miner", null, null, path, data, shouldMove, true);
-							    	Bukkit.getPluginManager().callEvent(loadminionattempt);
-								}
-							}.runTaskAsynchronously(minerCore);
-						}
+        // * Tests if miners should be auto loaded
+		if(!entitySettings.getBoolean("Auto_Load")) {return;}
+		
+		// * Sets variable for user data folder
+		File userDataFolder = new File(Core.getInstance().getDataFolder()+sChar+"UserStorage");
+		
+		// * Loops through all user data files
+		for(File userData : userDataFolder.listFiles()) {
+			String uuid = userData.getName().toString().replace(".yml", "");
+			YamlConfiguration yaml = UserConfigurations.getInstance().getYaml(UUID.fromString(uuid));
+			
+			// * Tests if player is online (Minions are usually already loaded if they are)
+			if(Bukkit.getPlayer(UUID.fromString(uuid)) == null) {
+				if(!yaml.getConfigurationSection("").getKeys(false).isEmpty()) {
+					for(String minionData : yaml.getConfigurationSection("MINER").getKeys(false)) {
+						String path = "MINER."+minionData;
+						String data = yaml.getString(path);
+						
+						// * Since the player is offline should the minion be moving or not
+						boolean shouldMove = (entitySettings.getBoolean("Work_Offline") || entitySettings.getBoolean("Offline_Movement")) ? true: false;
+						
+						// * Runs the load minion attempt event asynchronously
+						new BukkitRunnable() {
+							public void run() {
+								LoadMinionAttemptEvent loadminionattempt = new LoadMinionAttemptEvent(UUID.fromString(uuid), "Miner", null, null, path, data, shouldMove, true);
+						    	Bukkit.getPluginManager().callEvent(loadminionattempt);
+							}
+						}.runTaskAsynchronously(minerCore);
 					}
 				}
 			}

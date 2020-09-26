@@ -19,6 +19,8 @@ public class SaveMinion implements Listener {
 	@EventHandler
 	public void onMinionSave(SaveMinionEvent event) {
 		Minion minion = event.getMinion();
+		
+		// * Sets the string of data used in the event
 		event.setDataString(SaveMiner.saveMinion(minion, event.getDataString()));
 	}
 	
