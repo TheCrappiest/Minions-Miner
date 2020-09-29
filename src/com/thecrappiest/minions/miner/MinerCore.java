@@ -18,7 +18,7 @@ import com.thecrappiest.minions.miner.listeners.custom.PickupMinion;
 import com.thecrappiest.minions.miner.listeners.custom.ReloadPlugin;
 import com.thecrappiest.minions.miner.listeners.custom.SaveMinion;
 import com.thecrappiest.minions.miner.map.miniondata.MinerData;
-import com.thecrappiest.minions.miner.methods.SaveMiner;
+import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 
 public class MinerCore extends JavaPlugin {
@@ -62,7 +62,14 @@ public class MinerCore extends JavaPlugin {
 		
 		// * Saves all data for loaded miners
 		for(Minion minion : MinerData.getInstance().miners.keySet()) {
-			SaveMiner.saveMinion(minion, com.thecrappiest.minions.methods.SaveMinion.save(minion));
+			
+			Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
+			
+			if(miner != null) {
+				// * Adds data to minion object thats saved by the core
+				minion.addSaveData("CollectedEXP", miner.getCollectedEXP());
+				minion.addSaveData("BlocksMined", miner.getBlocksMined());
+			}
 		}
 		
 		// * Just for the sake of it

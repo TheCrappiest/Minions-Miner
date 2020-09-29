@@ -5,7 +5,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import com.thecrappiest.minions.events.SaveMinionEvent;
 import com.thecrappiest.minions.miner.MinerCore;
-import com.thecrappiest.minions.miner.methods.SaveMiner;
+import com.thecrappiest.minions.miner.map.miniondata.MinerData;
+import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 
 public class SaveMinion implements Listener {
@@ -19,9 +20,10 @@ public class SaveMinion implements Listener {
 	@EventHandler
 	public void onMinionSave(SaveMinionEvent event) {
 		Minion minion = event.getMinion();
+		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
 		
-		// * Sets the string of data used in the event
-		event.setDataString(SaveMiner.saveMinion(minion, event.getDataString()));
+		minion.addSaveData("CollectedEXP", miner.getCollectedEXP());
+		minion.addSaveData("BlocksMined", miner.getBlocksMined());
 	}
 	
 }
