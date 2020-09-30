@@ -1,8 +1,11 @@
 package com.thecrappiest.minions.miner.listeners.custom;
 
+import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,6 +14,8 @@ import org.bukkit.inventory.ItemStack;
 
 import com.thecrappiest.minions.events.InteractWithMinionEvent;
 import com.thecrappiest.minions.items.ItemNBT;
+import com.thecrappiest.minions.methods.NumberUtil;
+import com.thecrappiest.minions.methods.PermissionMethods;
 import com.thecrappiest.minions.miner.MinerCore;
 import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
 import com.thecrappiest.minions.threads.GenerateMinionInventory;
@@ -62,10 +67,13 @@ public class InteractWithMinion implements Listener {
 					
 					// * If minion is holding a non default item it will be given to the player
 					if(!ItemNBT.getNBTUtils().itemContainsNBTTag(as.getEquipment().getItemInMainHand(), "MinionsHeldItem")) {
-						if(player.getInventory().firstEmpty() == -1) {
-							player.getWorld().dropItemNaturally(player.getLocation(), as.getEquipment().getItemInMainHand());
-						}else {
-							player.getInventory().addItem(as.getEquipment().getItemInMainHand());
+						// * Tests if the item matches the item the minion is already holding
+						if(!interactionItem.isSimilar(as.getEquipment().getItemInMainHand())) {
+							if(player.getInventory().firstEmpty() == -1) {
+								player.getWorld().dropItemNaturally(player.getLocation(), as.getEquipment().getItemInMainHand());
+							}else {
+								player.getInventory().addItem(as.getEquipment().getItemInMainHand());
+							}
 						}
 					}
 					
@@ -79,7 +87,47 @@ public class InteractWithMinion implements Listener {
 						player.getInventory().removeItem(cloneItem);
 					}else {
 					    player.getInventory().removeItem(interactionItem);
-				    } 
+				    }
+					
+					// * Map of items enchantments
+					Map<Enchantment, Integer> enchants = interactionItem.getEnchantments();
+					
+					boolean altered_Movement_Delay = false;
+					
+					// * Checks if item contains enchants
+					if(!enchants.isEmpty()) {
+						if(enchants.containsKey(Enchantment.DIG_SPEED)) {
+							int level = interactionItem.getEnchantmentLevel(Enchantment.DIG_SPEED);
+							int delay = minion.getMovementDelay();
+							
+							int levelConversion = level*10;
+							
+							// * Sets the new delay from efficiency level
+							if(delay - levelConversion <= 10) {
+								minion.setMovementDelay(10);
+							}else {
+								minion.setMovementDelay(delay-levelConversion);
+							}
+							
+							// * Sets the delay placeholder
+							minion.setMovementDelayPlaceholder();
+							altered_Movement_Delay = true;
+						}
+					}
+					
+					if(!altered_Movement_Delay) {
+                        YamlConfiguration entitySettings = MinerConfigurations.getInstance().getYaml("settings");
+						
+						// * Setting the minions movement delay to its default	
+						minion.setMovementDelay(NumberUtil.delayConverter(entitySettings.getDouble("Default_Movement_Speed")));
+						if(player != null) {
+							double permissionDelay = PermissionMethods.getLowestValue(player, entitySettings.getStringList("Movement_Speed_Permissions"));
+							if(permissionDelay > -1) {
+								minion.setMovementDelay(NumberUtil.delayConverter(permissionDelay));
+							}
+						}
+						minion.setMovementDelayPlaceholder();
+					}
 				}
 			}
 		}

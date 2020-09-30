@@ -1,4 +1,4 @@
-package com.thecrappiest.minions.miner.listeners.custom;
+package com.thecrappiest.minions.miner.listeners.miniontask;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,7 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.thecrappiest.minions.events.MinionLastPoseEvent;
+import com.thecrappiest.minions.events.MinionPerformTaskEvent;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
 import com.thecrappiest.minions.methods.MinionEntityMethods;
 import com.thecrappiest.minions.miner.MinerCore;
@@ -23,18 +23,16 @@ import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 import com.thecrappiest.objects.MinionInventory;
 
-public class LastPose implements Listener {
+public class PerformMinerTask implements Listener {
 
-	public final MinerCore minerCore;
-	public LastPose(MinerCore minerCore) {
+	public MinerCore minerCore;
+	public PerformMinerTask(MinerCore minerCore) {
 		this.minerCore = minerCore;
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
-	@EventHandler
-	public void onLastPose(MinionLastPoseEvent event) {
-		// * Tests if minion is a miner
-		if(!event.getMinion().getType().equals("MINER")) {return;}
+	@EventHandler(ignoreCancelled = true)
+	public void onPerformTask(MinionPerformTaskEvent event) {
 		
 		// * Sets variables used in the event
 		Minion minion = event.getMinion();
@@ -43,34 +41,32 @@ public class LastPose implements Listener {
 		
 		// * Sets variable for miner object
 		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
-		
-		// * Returns if a miner object was not found
 		if(miner == null) {return;}
 		
 		// * Sets block variables
 		Block block = as.getLocation().getBlock().getRelative(BlockFace.valueOf(MinionEntityMethods.getDirection(minion)));
 		if(block == null) {return;}
 		Material blockType = block.getType();
-		
+
 		// * Returns if block doesn't drop items or is air
 		if(blockType == Material.AIR || block.getDrops(as.getEquipment().getItemInMainHand()).isEmpty()) {return;}
-		
+
 		// * Returns if block type is not whitelisted
 		if(!miner.getMineableBlocks().contains(blockType)) {return;}
-		
+
 		// * Creates and calls the MinerBreakBlockAttemptEvent (Allows other plugins to know a miner is attempting to break the block)
 		MinerBreakBlockAttemptEvent minerbba = new MinerBreakBlockAttemptEvent(block, minion);
 		Bukkit.getPluginManager().callEvent(minerbba);
-		
+
 		// * Returns if the break block attempt was cancelled
 		if(minerbba.isCancelled()) {return;}
-		
+
 		// * Gets exp amount from the block type
 		int expFromBlock = miner.getEXPForBlock(blockType);
-		
+
 		// * Sets whether the miner should bottle exp or just collect it
 		boolean shouldBottle = miner.shouldBottleEXP();
-		
+
 		// * Counts the amount of bottls that should be created once exp has been added
 		int amountOfBottles = 0;
 		if(shouldBottle) {
@@ -79,7 +75,7 @@ public class LastPose implements Listener {
 				amountOfBottles = currentEXP/5;
 			}
 		}
-		
+
 		// * Tests minion for a link chest
 		if(minion.getLinkedChest("Link_Chest") != null) {
 			Location loc = minion.getLinkedChest("Link_Chest");

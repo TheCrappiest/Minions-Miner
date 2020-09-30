@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,6 +51,16 @@ public class PickupMinion implements Listener {
 			nbtTags.put("Hunger", String.valueOf(minion.getHunger()));
 			if(minion.getMaxHunger() != -1) {
 				nbtTags.put("MaxHunger", String.valueOf(minion.getMaxHunger()));
+			}
+		}
+		
+		ArmorStand as = (ArmorStand) minion.getEntity();
+		// * If minion is holding a non default item it will be given to the player
+		if(!ItemNBT.getNBTUtils().itemContainsNBTTag(as.getEquipment().getItemInMainHand(), "MinionsHeldItem")) {
+			if(player.getInventory().firstEmpty() == -1) {
+				player.getWorld().dropItemNaturally(player.getLocation(), as.getEquipment().getItemInMainHand());
+			}else {
+				player.getInventory().addItem(as.getEquipment().getItemInMainHand());
 			}
 		}
 		

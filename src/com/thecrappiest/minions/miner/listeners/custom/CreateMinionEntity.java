@@ -1,5 +1,6 @@
 package com.thecrappiest.minions.miner.listeners.custom;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -7,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -267,7 +269,31 @@ public class CreateMinionEntity implements Listener {
 						
 						// * Checking for a saved held item
 						if(jsonData.containsKey("HeldItemData")) {
-							armorstand.getEquipment().setItemInMainHand(ItemCreation.createItem(jsonData.get("HeldItemData").toString(), null));
+							ItemStack heldItem = ItemCreation.createItem(jsonData.get("HeldItemData").toString(), null);
+							armorstand.getEquipment().setItemInMainHand(heldItem);
+							
+							// * Map of items enchantments
+							Map<Enchantment, Integer> enchants = heldItem.getEnchantments();
+							
+							// * Checks if item contains enchants
+							if(!enchants.isEmpty()) {
+								if(enchants.containsKey(Enchantment.DIG_SPEED)) {
+									int level = heldItem.getEnchantmentLevel(Enchantment.DIG_SPEED);
+									int delay = miner.getMovementDelay();
+									
+									int levelConversion = level*10;
+									
+									// * Sets the new delay from efficiency level
+									if(delay - levelConversion <= 10) {
+										miner.setMovementDelay(10);
+									}else {
+										miner.setMovementDelay(delay-levelConversion);
+									}
+									
+									// * Sets the delay placeholder
+									miner.setMovementDelayPlaceholder();
+								}
+							}
 						}
 						
 						// * Checks for saved health

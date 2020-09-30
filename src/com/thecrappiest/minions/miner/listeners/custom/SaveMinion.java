@@ -22,6 +22,8 @@ public class SaveMinion implements Listener {
 		Minion minion = event.getMinion();
 		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
 		
+		if(miner == null) {return;}
+		
 		minion.addSaveData("CollectedEXP", miner.getCollectedEXP());
 		minion.addSaveData("BlocksMined", miner.getBlocksMined());
 	}

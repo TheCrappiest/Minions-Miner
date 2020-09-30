@@ -2,6 +2,7 @@ package com.thecrappiest.minions.miner.map.miniondata;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
@@ -21,7 +22,12 @@ public class MinerData {
 	
 	// * Returns a miner object if stored
 	public Miner getMinerFromMinion(Minion minion) {
-		return miners.entrySet().stream().filter(entry -> entry.getKey().equals(minion)).findAny().orElse(null).getValue();
+		Entry<Minion, Miner> minerEntry = miners.entrySet().stream().filter(entry -> entry.getKey().equals(minion)).findAny().orElse(null);
+		if(minerEntry != null) {
+			return minerEntry.getValue();
+		}else {
+			return null;
+		}
 	}
 	
 }

@@ -11,12 +11,13 @@ import com.thecrappiest.minions.miner.listeners.custom.AutoLoadMiners;
 import com.thecrappiest.minions.miner.listeners.custom.CreateMinionEntity;
 import com.thecrappiest.minions.miner.listeners.custom.GiveCommand;
 import com.thecrappiest.minions.miner.listeners.custom.InteractWithMinion;
-import com.thecrappiest.minions.miner.listeners.custom.LastPose;
 import com.thecrappiest.minions.miner.listeners.custom.LoadMinionAttempt;
 import com.thecrappiest.minions.miner.listeners.custom.PerformItemActions;
 import com.thecrappiest.minions.miner.listeners.custom.PickupMinion;
 import com.thecrappiest.minions.miner.listeners.custom.ReloadPlugin;
 import com.thecrappiest.minions.miner.listeners.custom.SaveMinion;
+import com.thecrappiest.minions.miner.listeners.miniontask.LastPose;
+import com.thecrappiest.minions.miner.listeners.miniontask.PerformMinerTask;
 import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
@@ -55,6 +56,7 @@ public class MinerCore extends JavaPlugin {
 		new PlayerLeave(this);
 		new SaveMinion(this);
 		new PerformItemActions(this);
+		new PerformMinerTask(this);
 	}
 	
 	// * Method runs when plugin disables
