@@ -145,10 +145,6 @@ public class CreateMinionEntity implements Listener {
 		Minion miner = new Minion(armorstand, armorstand.getUniqueId(), uuid, "MINER");
 		MinionData.getInstance().loadedMinions.put(armorstand.getUniqueId(), miner);
 		
-		// * Setting default placeholders for miner
-		miner.setPlaceHolder("%minion_blocksmined%", "0");
-		miner.setPlaceHolder("%minion_collectedexp%", "0");
-		
 		// * Starting the minions movement thread and setting the default delay		
 		miner.setMovementDelay(NumberUtil.delayConverter(entitySettings.getDouble("Default_Movement_Speed")));
 		if(player != null) {
@@ -177,6 +173,10 @@ public class CreateMinionEntity implements Listener {
 		// * If empty will generate default placeholders
 		miner.getPlaceHolders();
 		miner.setMovementDelayPlaceholder();
+		
+		// * Setting default placeholders for miner
+		miner.setPlaceHolder("%minion_blocksmined%", "0");
+		miner.setPlaceHolder("%minion_collectedexp%", "0");
 		
 		// * Creates a new miner object and adds it to the miners map
 		Miner minerOBJ = new Miner(miner.getEntity(), miner.getEntityID(), miner.getOwner(), miner.getType());
@@ -345,7 +345,7 @@ public class CreateMinionEntity implements Listener {
 				// * Setting the minion as loaded (Will allow the minion to be interacted with)
 				miner.setLoaded(true);
 			}
-		}.runTaskLaterAsynchronously(Core.getInstance(), 20);
+		}.runTaskLaterAsynchronously(Core.getInstance(), 5);
 	}
 	
 }

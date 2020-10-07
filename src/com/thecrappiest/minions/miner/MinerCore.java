@@ -1,7 +1,6 @@
 package com.thecrappiest.minions.miner;
 
 import java.io.File;
-
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.thecrappiest.minions.messages.ConsoleOutput;
@@ -19,6 +18,7 @@ import com.thecrappiest.minions.miner.listeners.custom.SaveMinion;
 import com.thecrappiest.minions.miner.listeners.miniontask.LastPose;
 import com.thecrappiest.minions.miner.listeners.miniontask.PerformMinerTask;
 import com.thecrappiest.minions.miner.map.miniondata.MinerData;
+import com.thecrappiest.minions.miner.methods.LoadMiners;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 
@@ -57,6 +57,8 @@ public class MinerCore extends JavaPlugin {
 		new SaveMinion(this);
 		new PerformItemActions(this);
 		new PerformMinerTask(this);
+		
+		LoadMiners.loadMinersForOnline();
 	}
 	
 	// * Method runs when plugin disables
