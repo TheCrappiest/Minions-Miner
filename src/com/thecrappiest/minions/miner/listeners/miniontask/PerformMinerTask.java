@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.event.EventHandler;
@@ -13,7 +14,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.events.MinionPerformTaskEvent;
+import com.thecrappiest.minions.items.VersionMaterial;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
 import com.thecrappiest.minions.methods.MinionEntityMethods;
 import com.thecrappiest.minions.miner.MinerCore;
@@ -31,6 +34,7 @@ public class PerformMinerTask implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled = true)
 	public void onPerformTask(MinionPerformTaskEvent event) {
 		
@@ -49,7 +53,9 @@ public class PerformMinerTask implements Listener {
 		Material blockType = block.getType();
 
 		// * Returns if block doesn't drop items or is air
-		if(blockType == Material.AIR || block.getDrops(as.getEquipment().getItemInMainHand()).isEmpty()) {return;}
+		if(blockType == Material.AIR) {
+			if(Core.isLegacy() && block.getDrops(as.getEquipment().getItemInHand()).isEmpty()) {return;}
+			else if(block.getDrops(as.getEquipment().getItemInMainHand()).isEmpty()){return;}}
 
 		// * Returns if block type is not whitelisted
 		if(!miner.getMineableBlocks().contains(blockType)) {return;}
@@ -85,13 +91,27 @@ public class PerformMinerTask implements Listener {
 			if(chestBlock.getType() == Material.CHEST || chestBlock.getType() == Material.TRAPPED_CHEST) {
 				
 				BlockState state = chestBlock.getState();
-				Inventory inv = ((Container)state).getInventory();
+				Inventory chestInv = null;
+				if(Core.isLegacy()) {
+					Chest chest = (Chest) state;
+					chestInv = chest.getInventory();
+				}else {
+					chestInv = ((Container)state).getInventory();
+				}
 				
+				Inventory inv = chestInv;
 				// * Tests if inventory has space for items
-				if(inv.firstEmpty() != -1) {
+				if(inv != null && inv.firstEmpty() != -1) {
+					
+					ItemStack heldItem = null;
+					if(Core.isLegacy()) {
+						heldItem = as.getEquipment().getItemInHand();
+					}else {
+						heldItem = as.getEquipment().getItemInMainHand();
+					}
 					
 					// * Adds items to the chest
-					block.getDrops(as.getEquipment().getItemInMainHand()).forEach(item -> {
+					block.getDrops(heldItem).forEach(item -> {
 						if(inv.firstEmpty() != -1) {
 							inv.addItem(item);
 						}
@@ -119,7 +139,7 @@ public class PerformMinerTask implements Listener {
 									// * Updates the collectedexp
 									miner.setCollectedEXP(miner.getCollectedEXP()-5);
 									minion.setPlaceHolder("%minion_collectedexp%", String.valueOf(miner.getCollectedEXP()));
-									inv.addItem(new ItemStack(Material.EXPERIENCE_BOTTLE));
+									inv.addItem(VersionMaterial.valueOf("EXPERIENCE_BOTTLE").getItemStack());
 								}
 							}
 						}
@@ -134,7 +154,11 @@ public class PerformMinerTask implements Listener {
 			}
 		}else {
 			// * Breaks the block using the item held
-			block.breakNaturally(as.getEquipment().getItemInMainHand());
+			if(Core.isLegacy()) {
+				block.breakNaturally(as.getEquipment().getItemInHand());
+			}else {
+				block.breakNaturally(as.getEquipment().getItemInMainHand());
+			}
 			
 			// * Adds 1 to blocks mined
 			miner.setBlocksMined(miner.getBlocksMined()+1);
@@ -154,7 +178,7 @@ public class PerformMinerTask implements Listener {
 						// * Updates the collected exp
 						miner.setCollectedEXP(miner.getCollectedEXP()-5);
 						minion.setPlaceHolder("%minion_collectedexp%", String.valueOf(miner.getCollectedEXP()));
-						block.getWorld().dropItemNaturally(minion.getEntity().getLocation(), new ItemStack(Material.EXPERIENCE_BOTTLE));
+						block.getWorld().dropItemNaturally(minion.getEntity().getLocation(), VersionMaterial.valueOf("EXPERIENCE_BOTTLE").getItemStack());
 					}
 				}
 			}

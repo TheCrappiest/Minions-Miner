@@ -1,10 +1,11 @@
 name: Minions-Miner
 main: com.thecrappiest.minions.miner.MinerCore
-version: 0.0.5
+version: 0.0.6
 api-version: 1.16
 depend: [Minions-Revamped]
 
-# Update 0.0.5 for Minions-Miner
+# Update 0.0.6 for Minions-Miner
 
-# * Added loadMinersForOnline method. Loads miners for online players.
-# * Moved set placeholders on CreateMinionEntity to below the intial getplaceholders call. Allows the getPlaceholders method to set defaults.
+# Updated Minions-Revamped dependency.
+# Updated code to function on lower versions.
+# Update "Minable" path to "Mineable" in settings.yml

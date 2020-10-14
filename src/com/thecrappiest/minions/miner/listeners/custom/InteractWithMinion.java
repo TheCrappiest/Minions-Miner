@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
+import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.events.InteractWithMinionEvent;
 import com.thecrappiest.minions.items.ItemNBT;
 import com.thecrappiest.minions.methods.NumberUtil;
@@ -29,6 +30,7 @@ public class InteractWithMinion implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled=true)
 	public void onInteractWithMinion(InteractWithMinionEvent event) {
 		Player player = event.getPlayer();
@@ -64,21 +66,32 @@ public class InteractWithMinion implements Listener {
 				// * Tests if the interaction item is allowed to be held by the minion
 				if(yaml.getStringList("Holdable_Materials").contains(interactionItem.getType().name())) {
 					ArmorStand as = (ArmorStand) minion.getEntity();
+					ItemStack heldItem = null;
+					
+					if(Core.isLegacy()) {
+						heldItem = as.getEquipment().getItemInHand();
+					}else {
+						heldItem = as.getEquipment().getItemInMainHand();
+					}
 					
 					// * If minion is holding a non default item it will be given to the player
-					if(!ItemNBT.getNBTUtils().itemContainsNBTTag(as.getEquipment().getItemInMainHand(), "MinionsHeldItem")) {
+					if(!ItemNBT.getNBTUtils().itemContainsNBTTag(heldItem, "MinionsHeldItem")) {
 						// * Tests if the item matches the item the minion is already holding
-						if(!interactionItem.isSimilar(as.getEquipment().getItemInMainHand())) {
+						if(!interactionItem.isSimilar(heldItem)) {
 							if(player.getInventory().firstEmpty() == -1) {
-								player.getWorld().dropItemNaturally(player.getLocation(), as.getEquipment().getItemInMainHand());
+								player.getWorld().dropItemNaturally(player.getLocation(), heldItem);
 							}else {
-								player.getInventory().addItem(as.getEquipment().getItemInMainHand());
+								player.getInventory().addItem(heldItem);
 							}
 						}
 					}
 					
 					// * Sets the new item in minions hand
-					as.getEquipment().setItemInMainHand(interactionItem);
+					if(Core.isLegacy()) {
+						as.getEquipment().setItemInHand(interactionItem);
+					}else {
+						as.getEquipment().setItemInMainHand(interactionItem);
+					}
 					
 					// * Removes item from players inventory
 					if(interactionItem.getAmount() > 1) {

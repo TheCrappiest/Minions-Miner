@@ -24,6 +24,7 @@ import com.thecrappiest.minions.events.CreateMinionEntityEvent;
 import com.thecrappiest.minions.items.ItemCreation;
 import com.thecrappiest.minions.items.ItemNBT;
 import com.thecrappiest.minions.items.SkullCreation;
+import com.thecrappiest.minions.items.VersionMaterial;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
 import com.thecrappiest.minions.maps.miniondata.ThreadsHolder;
 import com.thecrappiest.minions.messages.ConsoleOutput;
@@ -131,10 +132,21 @@ public class CreateMinionEntity implements Listener {
 						, "MinionsBoots", "DEFAULT", null));
 		
 		// * Sets the held item
-		armorstand.getEquipment().setItemInMainHand(
-				ItemNBT.getNBTUtils().addNBTTagString(
-						ItemCreation.createItem(entityData.getConfigurationSection("Held_Item"), null)
-						, "MinionsHeldItem", "DEFAULT", null));
+		ItemStack heldItem = ItemNBT.getNBTUtils().addNBTTagString(
+				ItemCreation.createItem(entityData.getConfigurationSection("Held_Item"), null)
+				, "MinionsHeldItem", "DEFAULT", null);
+		
+		if(Core.isLegacy()) {
+			// * Adds a delay so skull texture can load
+			new BukkitRunnable() {
+				@SuppressWarnings("deprecation")
+				public void run() {
+					armorstand.getEquipment().setItemInHand(heldItem);
+				}
+			}.runTaskLater(Core.getInstance(), 20);
+		}else {
+			armorstand.getEquipment().setItemInMainHand(heldItem);
+		}
 		
 		// * Sets the display name of the minion entity
 		armorstand.setCustomName(Messages.util().addColor(entityData.getString("Entity_Name")));
@@ -147,7 +159,7 @@ public class CreateMinionEntity implements Listener {
 		
 		// * Starting the minions movement thread and setting the default delay		
 		miner.setMovementDelay(NumberUtil.delayConverter(entitySettings.getDouble("Default_Movement_Speed")));
-		if(player != null) {
+		if(player != null && player.isOnline()) {
 			double permissionDelay = PermissionMethods.getLowestValue(player, entitySettings.getStringList("Movement_Speed_Permissions"));
 			if(permissionDelay > -1) {
 				miner.setMovementDelay(NumberUtil.delayConverter(permissionDelay));
@@ -163,7 +175,7 @@ public class CreateMinionEntity implements Listener {
 		}
 		
 		// * Adjusting chunk settings
-		if(entitySettings.getBoolean("Keep_Chunk_Loaded")) {
+		if(entitySettings.getBoolean("Keep_Chunk_Loaded") && !Core.isLegacy()) {
 			armorstand.getLocation().getChunk().setForceLoaded(true);
 		}
 		
@@ -227,8 +239,8 @@ public class CreateMinionEntity implements Listener {
 		// * Adds blocks that give exp to map
 	    if(entitySettings.isSet("EXP_Blocks") && !entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false).isEmpty()) {
 	    	for(String blockType : entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false)) {
-	    		Material material = Material.valueOf(blockType);
-	    		if(material != null && material != Material.AIR) {
+	    		Material material = VersionMaterial.valueOf(blockType).getMaterial();
+	    		if(material != null && material != VersionMaterial.AIR.getMaterial()) {
 	    			minerOBJ.addEXPForBlock(material, entitySettings.getInt("EXP_Blocks."+blockType));
 	    		}
 	    	}
@@ -237,8 +249,8 @@ public class CreateMinionEntity implements Listener {
 	    // * Adds list of mineable block types
 	    if(entitySettings.isSet("Mineable")) {
 	    	for(String blockType : entitySettings.getStringList("Mineable")) {
-	    		Material material = Material.valueOf(blockType);
-	    		if(material != null && material != Material.AIR) {
+	    		Material material = VersionMaterial.valueOf(blockType).getMaterial();
+	    		if(material != null && material != VersionMaterial.AIR.getMaterial()) {
 	    			minerOBJ.addMinableBlock(material);
 	    		}
 	    	}
@@ -248,6 +260,7 @@ public class CreateMinionEntity implements Listener {
 	    minerOBJ.bottleEXP(entitySettings.getBoolean("Bottle_EXP"));
 	    
 		new BukkitRunnable() {
+			@SuppressWarnings("deprecation")
 			public void run() {
 				
 				// * Checking if the minion is being loaded with data
@@ -270,7 +283,11 @@ public class CreateMinionEntity implements Listener {
 						// * Checking for a saved held item
 						if(jsonData.containsKey("HeldItemData")) {
 							ItemStack heldItem = ItemCreation.createItem(jsonData.get("HeldItemData").toString(), null);
-							armorstand.getEquipment().setItemInMainHand(heldItem);
+							if(Core.isLegacy()) {
+								armorstand.getEquipment().setItemInHand(ItemCreation.createItem(jsonData.get("HeldItemData").toString(), null));
+							}else {
+								armorstand.getEquipment().setItemInMainHand(ItemCreation.createItem(jsonData.get("HeldItemData").toString(), null));
+							}
 							
 							// * Map of items enchantments
 							Map<Enchantment, Integer> enchants = heldItem.getEnchantments();

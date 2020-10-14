@@ -8,7 +8,9 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 
+import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.events.PickupMinionEvent;
 import com.thecrappiest.minions.items.ItemCreation;
 import com.thecrappiest.minions.items.ItemNBT;
@@ -27,6 +29,7 @@ public class PickupMinion implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled=true)
 	public void onPickupMinion(PickupMinionEvent event) {
 		Player player = event.getPlayer();
@@ -55,12 +58,20 @@ public class PickupMinion implements Listener {
 		}
 		
 		ArmorStand as = (ArmorStand) minion.getEntity();
+		ItemStack heldItem = null;
+		
+		if(Core.isLegacy()) {
+			heldItem = as.getEquipment().getItemInHand();
+		}else {
+			heldItem = as.getEquipment().getItemInMainHand();
+		}
+		
 		// * If minion is holding a non default item it will be given to the player
-		if(!ItemNBT.getNBTUtils().itemContainsNBTTag(as.getEquipment().getItemInMainHand(), "MinionsHeldItem")) {
+		if(!ItemNBT.getNBTUtils().itemContainsNBTTag(heldItem, "MinionsHeldItem")) {
 			if(player.getInventory().firstEmpty() == -1) {
-				player.getWorld().dropItemNaturally(player.getLocation(), as.getEquipment().getItemInMainHand());
+				player.getWorld().dropItemNaturally(player.getLocation(), heldItem);
 			}else {
-				player.getInventory().addItem(as.getEquipment().getItemInMainHand());
+				player.getInventory().addItem(heldItem);
 			}
 		}
 		

@@ -68,7 +68,7 @@ Hunger:
   Max_Amount: 20
 
 # Minable - what blocks can be mined using this minion?
-Minable:
+Mineable:
   - COBBLESTONE
   - STONE
   - COAL_ORE
