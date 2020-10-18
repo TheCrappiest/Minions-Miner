@@ -24,7 +24,6 @@ import com.thecrappiest.minions.events.CreateMinionEntityEvent;
 import com.thecrappiest.minions.items.ItemCreation;
 import com.thecrappiest.minions.items.ItemNBT;
 import com.thecrappiest.minions.items.SkullCreation;
-import com.thecrappiest.minions.items.VersionMaterial;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
 import com.thecrappiest.minions.maps.miniondata.ThreadsHolder;
 import com.thecrappiest.minions.messages.ConsoleOutput;
@@ -39,6 +38,7 @@ import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.minions.threads.MovementThread;
 import com.thecrappiest.objects.Minion;
+import com.thecrappiest.versionclasses.VersionMaterial;
 
 public class CreateMinionEntity implements Listener {
 

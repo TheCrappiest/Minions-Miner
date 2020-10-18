@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.thecrappiest.minions.messages.ConsoleOutput;
 import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
+import com.thecrappiest.minions.miner.listeners.base.ChunkLoading;
 import com.thecrappiest.minions.miner.listeners.base.PlayerLeave;
 import com.thecrappiest.minions.miner.listeners.custom.AutoLoadMiners;
 import com.thecrappiest.minions.miner.listeners.custom.CreateMinionEntity;
@@ -57,6 +58,7 @@ public class MinerCore extends JavaPlugin {
 		new SaveMinion(this);
 		new PerformItemActions(this);
 		new PerformMinerTask(this);
+		new ChunkLoading(this);
 		
 		LoadMiners.loadMinersForOnline();
 	}

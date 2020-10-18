@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.events.MinionPerformTaskEvent;
-import com.thecrappiest.minions.items.VersionMaterial;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
 import com.thecrappiest.minions.methods.MinionEntityMethods;
 import com.thecrappiest.minions.miner.MinerCore;
@@ -25,6 +24,7 @@ import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 import com.thecrappiest.objects.MinionInventory;
+import com.thecrappiest.versionclasses.VersionMaterial;
 
 public class PerformMinerTask implements Listener {
 
