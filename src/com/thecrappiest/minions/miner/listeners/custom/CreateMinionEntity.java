@@ -76,7 +76,7 @@ public class CreateMinionEntity implements Listener {
 		}
 		
 		// * Stops the minion from being created if the world is disabled
-		if(minerCore.getConfig().getStringList("Disabled_Worlds").contains(location.getWorld().getName())) {
+		if(Core.getInstance().getConfig().getStringList("Disabled_Worlds").contains(location.getWorld().getName())) {
 			ConsoleOutput.warn("CreationFailure >> Minion at W:"+location.getWorld().getName()+
 					", X:"+location.getBlockX()+", Y:"+location.getBlockY()+", Z:"+location.getBlockZ()+" has failed to load.");
 			ConsoleOutput.warn("Reason: DISABLED_WORLD");

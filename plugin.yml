@@ -4,7 +4,10 @@ version: 0.0.7
 api-version: 1.13
 depend: [Minions-Revamped]
 
-# Update 0.0.7 for Minions-Miner
+# Update 0.0.7 for Minions-Miner 
+
+# Hot-Fix: Chunloading checked for "DISPLAY" Minion and checks for legacy versions.
+# Hot-Fix: CreateMinionEntity wasn't checking the cores config for the list of disabled worlds.
 
 # Updated Minions-Revamped dependency.
 # Set "api-version" to 1.13
