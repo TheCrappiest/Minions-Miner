@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.common.io.Files;
 import com.thecrappiest.minions.Core;
+import com.thecrappiest.minions.configuration.MinionTypeConfigurations;
 import com.thecrappiest.minions.messages.ConsoleOutput;
 import com.thecrappiest.minions.miner.MinerCore;
 
@@ -46,64 +47,41 @@ public class MinerConfigurations {
 		case "entity":
 			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"entity.yml", true);
 			File loadedEntity = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"entity.yml");
-			if(loadedEntity.exists()) {
-				try {
-					Core.getInstance().createFile(entity_file);
-					Files.copy(loadedEntity, entity_file);
-				} catch (IOException e) {
-					ConsoleOutput.debug("Miners entity.yml has failed to copy to save location. Please message the author with any stack traces logged.");
-					e.printStackTrace();
-				}
-				loadedEntity.delete();
-			}
+			loadAndCopyDefaults(loadedEntity, entity_file);
 			break;
 		case "inventory":
 			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"inventory.yml", true);
 			File loadedInventory = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"inventory.yml");
-			if(loadedInventory.exists()) {
-				try {
-					Core.getInstance().createFile(inventory_file);
-					Files.copy(loadedInventory, inventory_file);
-				} catch (IOException e) {
-					ConsoleOutput.debug("Miners inventory.yml has failed to copy to save location. Please message the author with any stack traces logged.");
-					e.printStackTrace();
-				}
-				loadedInventory.delete();
-			}
+			loadAndCopyDefaults(loadedInventory, inventory_file);
 			break;
 		case "item":
 			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"item.yml", true);
 			File loadedItem = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"item.yml");
-			if(loadedItem.exists()) {
-				try {
-					Core.getInstance().createFile(item_file);
-					Files.copy(loadedItem, item_file);
-				} catch (IOException e) {
-					ConsoleOutput.debug("Miners item.yml has failed to copy to save location. Please message the author with any stack traces logged.");
-					e.printStackTrace();
-				}
-				loadedItem.delete();
-			}
+			loadAndCopyDefaults(loadedItem, item_file);
 			break;
 		case "settings":
 			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"settings.yml", true);
 			File loadedSettings = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"settings.yml");
-			if(loadedSettings.exists()) {
-				try {
-					Core.getInstance().createFile(settings_file);
-					Files.copy(loadedSettings, settings_file);
-				} catch (IOException e) {
-					ConsoleOutput.debug("Miners settings.yml has failed to copy to save location. Please message the author with any stack traces logged.");
-					e.printStackTrace();
-				}
-				loadedSettings.delete();
-			}
+			loadAndCopyDefaults(loadedSettings, settings_file);
 			break;
 		}
 		if(MinerCore.getInstance().getDataFolder().exists()) {
 			new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner").delete();
 			new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations").delete();
 			MinerCore.getInstance().getDataFolder().delete();
+		}
+	}
+	
+	public void loadAndCopyDefaults(File load, File copy) {
+		if(load.exists()) {
+			try {
+				Core.getInstance().createFile(copy);
+				Files.copy(load, copy);
+			} catch (IOException e) {
+				ConsoleOutput.debug("Butchers "+copy.getName()+" has failed to copy to save location. Please message the author with any stack traces logged.");
+				e.printStackTrace();
+			}
+			load.delete();
 		}
 	}
 	
@@ -119,31 +97,38 @@ public class MinerConfigurations {
 			return yamlConfigs.get(key);
 		}
 		
+		YamlConfiguration yml = null;
+		
 		switch(key.toLowerCase()) {
 		case "entity":
 			if(!entity_file.exists()) {
 				loadDefault(key);
 			}
-			yamlConfigs.put(key, YamlConfiguration.loadConfiguration(entity_file));
+			yml = YamlConfiguration.loadConfiguration(entity_file);
 			break;
 		case "inventory":
 			if(!inventory_file.exists()) {
 				loadDefault(key);
 			}
-			yamlConfigs.put(key, YamlConfiguration.loadConfiguration(inventory_file));
+			yml = YamlConfiguration.loadConfiguration(inventory_file);
 			break;
 		case "item":
 			if(!item_file.exists()) {
 				loadDefault(key);
 			}
-			yamlConfigs.put(key, YamlConfiguration.loadConfiguration(item_file));
+			yml = YamlConfiguration.loadConfiguration(item_file);
 			break;
 		case "settings":
 			if(!settings_file.exists()) {
 				loadDefault(key);
 			}
-			yamlConfigs.put(key, YamlConfiguration.loadConfiguration(settings_file));
+			yml = YamlConfiguration.loadConfiguration(settings_file);
 			break;
+		}
+		
+		if(yml != null) {
+		    MinionTypeConfigurations.getInstance().updateConfig("MINER", key.toLowerCase(), yml);
+		    yamlConfigs.put(key, yml);
 		}
 		
 		return yamlConfigs.get(key);
@@ -178,6 +163,7 @@ public class MinerConfigurations {
 			}
 			
 			yamlConfigs.put(key, yaml);
+			MinionTypeConfigurations.getInstance().updateConfig("MINER", key.toLowerCase(), yaml);
 		}
 	}
 	

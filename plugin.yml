@@ -1,15 +1,13 @@
 name: Minions-Miner
 main: com.thecrappiest.minions.miner.MinerCore
-version: 0.0.7
+version: 0.0.8
 api-version: 1.13
 depend: [Minions-Revamped]
 
-# Update 0.0.7 for Minions-Miner 
+# Update 0.0.8 for Minions-Miner 
 
-# Hot-Fix: Chunloading checked for "DISPLAY" Minion and checks for legacy versions.
-# Hot-Fix: CreateMinionEntity wasn't checking the cores config for the list of disabled worlds.
-
-# Updated Minions-Revamped dependency.
-# Set "api-version" to 1.13
-# Loads chunk when spawning and unloading minions.
-# Cancels chunk unload event for legacy versions. (If Keep_Chunk_Loaded is true)
+# Updated Minions-Revamped dependency. (Minions-Revamped 0.0.8)
+# Updated to 1.16.4
+# Modified methods to use MinionTypeConfigurations.
+# Modified events to use MinionTypeConfigurations.
+# Removed a few listeners.

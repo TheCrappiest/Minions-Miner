@@ -38,7 +38,7 @@ public class LoadMiners {
 			
 			// * Tests if player is online (Minions are usually already loaded if they are)
 			if(Bukkit.getPlayer(UUID.fromString(uuid)) == null) {
-				if(!yaml.getConfigurationSection("").getKeys(false).isEmpty()) {
+				if(!yaml.getConfigurationSection("").getKeys(false).isEmpty() && yaml.isSet("MINER")) {
 					for(String minionData : yaml.getConfigurationSection("MINER").getKeys(false)) {
 						String path = "MINER."+minionData;
 						String data = yaml.getString(path);
@@ -70,17 +70,18 @@ public class LoadMiners {
 				UUID uuid = onlinePlayer.getUniqueId();
 				if(UserConfigurations.getInstance().hasData(uuid)) {
 					YamlConfiguration yaml = UserConfigurations.getInstance().getYaml(uuid);
-					loadableMinions = loadableMinions+yaml.getConfigurationSection("MINER").getKeys(false).size();
-					
-					new BukkitRunnable() {
-						public void run() {
-							for(String location : yaml.getConfigurationSection("MINER").getKeys(false)) {
-					    		LoadMinionAttemptEvent loadminionattempt = new LoadMinionAttemptEvent(onlinePlayer, "MINER", null, null, "MINER."+location, yaml.getString("MINER."+location), true, true);
-						    	Bukkit.getPluginManager().callEvent(loadminionattempt);
-					    	}
-						}
-					}.runTaskAsynchronously(minerCore);
-					
+					if(yaml.isSet("MINER")) {
+						loadableMinions = loadableMinions+yaml.getConfigurationSection("MINER").getKeys(false).size();
+						
+						new BukkitRunnable() {
+							public void run() {
+								for(String location : yaml.getConfigurationSection("MINER").getKeys(false)) {
+						    		LoadMinionAttemptEvent loadminionattempt = new LoadMinionAttemptEvent(onlinePlayer, "MINER", null, null, "MINER."+location, yaml.getString("MINER."+location), true, true);
+							    	Bukkit.getPluginManager().callEvent(loadminionattempt);
+						    	}
+							}
+						}.runTaskAsynchronously(minerCore);
+					}
 				}
 			}
 			

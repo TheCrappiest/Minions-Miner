@@ -5,13 +5,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.thecrappiest.minions.messages.ConsoleOutput;
 import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
-import com.thecrappiest.minions.miner.listeners.base.ChunkLoading;
-import com.thecrappiest.minions.miner.listeners.base.PlayerLeave;
 import com.thecrappiest.minions.miner.listeners.custom.AutoLoadMiners;
 import com.thecrappiest.minions.miner.listeners.custom.CreateMinionEntity;
-import com.thecrappiest.minions.miner.listeners.custom.GiveCommand;
-import com.thecrappiest.minions.miner.listeners.custom.InteractWithMinion;
-import com.thecrappiest.minions.miner.listeners.custom.LoadMinionAttempt;
 import com.thecrappiest.minions.miner.listeners.custom.PerformItemActions;
 import com.thecrappiest.minions.miner.listeners.custom.PickupMinion;
 import com.thecrappiest.minions.miner.listeners.custom.ReloadPlugin;
@@ -46,21 +41,17 @@ public class MinerCore extends JavaPlugin {
 		MinerConfigurations.getInstance().loadConfig("settings");
 		
 		// * Loads all listeners used by the plugin
-		new GiveCommand(this);
 		new CreateMinionEntity(this);
 		new LastPose(this);
-		new InteractWithMinion(this);
 		new AutoLoadMiners(this);
 		new PickupMinion(this);
-		new LoadMinionAttempt(this);
 		new ReloadPlugin(this);
-		new PlayerLeave(this);
 		new SaveMinion(this);
 		new PerformItemActions(this);
 		new PerformMinerTask(this);
-		new ChunkLoading(this);
 		
 		LoadMiners.loadMinersForOnline();
+		LoadMiners.AutoloadMinerMinions();
 	}
 	
 	// * Method runs when plugin disables

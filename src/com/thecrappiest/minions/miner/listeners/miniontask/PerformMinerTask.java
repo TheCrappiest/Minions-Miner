@@ -43,6 +43,8 @@ public class PerformMinerTask implements Listener {
 		MinionInventory minionInv = MinionData.getInstance().getInventoryForMinion(minion);
 		ArmorStand as = (ArmorStand) minion.getEntity();
 		
+		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
+		
 		// * Sets variable for miner object
 		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
 		if(miner == null) {return;}
@@ -51,7 +53,7 @@ public class PerformMinerTask implements Listener {
 		Block block = as.getLocation().getBlock().getRelative(BlockFace.valueOf(MinionEntityMethods.getDirection(minion)));
 		if(block == null) {return;}
 		Material blockType = block.getType();
-
+		
 		// * Returns if block doesn't drop items or is air
 		if(blockType == Material.AIR) {
 			if(Core.isLegacy() && block.getDrops(as.getEquipment().getItemInHand()).isEmpty()) {return;}

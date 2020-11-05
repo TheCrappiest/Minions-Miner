@@ -24,6 +24,9 @@ public class PerformItemActions implements Listener {
 		
 		// * Sets variables used by the event
 		Minion minion = event.getMinion();
+		
+		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
+		
 		Player player = event.getPlayer();
 		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
 		

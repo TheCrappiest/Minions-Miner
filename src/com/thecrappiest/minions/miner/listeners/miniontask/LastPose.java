@@ -21,7 +21,7 @@ public class LastPose implements Listener {
 	@EventHandler
 	public void onLastPose(MinionLastPoseEvent event) {
 		// * Tests if minion is a miner
-		if(!event.getMinion().getType().equals("MINER")) {return;}
+		if(!event.getMinion().getType().equalsIgnoreCase("MINER")) {return;}
 		
 		// * Sets variables used in the event
 		Minion minion = event.getMinion();
