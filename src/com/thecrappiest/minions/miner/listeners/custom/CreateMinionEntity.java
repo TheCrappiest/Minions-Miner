@@ -7,9 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
-import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.configuration.MinionTypeConfigurations;
 import com.thecrappiest.minions.events.CreateMinionEntityEvent;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
@@ -17,6 +15,7 @@ import com.thecrappiest.minions.methods.ConversionMethods;
 import com.thecrappiest.minions.miner.MinerCore;
 import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
+import com.thecrappiest.minions.threads.RunTask;
 import com.thecrappiest.objects.Minion;
 import com.thecrappiest.versionclasses.VersionMaterial;
 
@@ -30,7 +29,7 @@ public class CreateMinionEntity implements Listener {
 	
 	@EventHandler(ignoreCancelled=true,priority=EventPriority.HIGHEST)
 	public void onCreateMinionEntity(CreateMinionEntityEvent event) {
-		String minionType = event.getMinionType();
+        String minionType = event.getMinionType();
 		Location location = event.getPlaceLocation();
 		
         if(!minionType.equalsIgnoreCase("MINER")) {return;}
@@ -41,7 +40,7 @@ public class CreateMinionEntity implements Listener {
 		}
 		
 		Minion minion = MinionData.getInstance().getMinionFromLocation(location);
-		if(minion == null) { return; }
+		if(minion == null) return;
 		
         minion.setLoaded(false);
 		
@@ -75,35 +74,32 @@ public class CreateMinionEntity implements Listener {
 	    	}
 	    }
 
-	   // * Sets whether or not exp should be bottled
-	   minerOBJ.bottleEXP(entitySettings.getBoolean("Bottle_EXP"));
+	    // * Sets whether or not exp should be bottled
+	    minerOBJ.bottleEXP(entitySettings.getBoolean("Bottle_EXP"));
 	   
-	   new BukkitRunnable() {
-			public void run() {
+        RunTask.delayedAsync(() -> {
+            // * Checking if the minion is being loaded with data
+            if(event.getData() != null) {
+                JSONObject jsonData = ConversionMethods.parseString(event.getData());
 				
-				// * Checking if the minion is being loaded with data
-				if(event.getData() != null) {
-					JSONObject jsonData = ConversionMethods.parseString(event.getData());
+				if(jsonData != null) {
+					// * Checks for saved collectedexp
+					if(jsonData.containsKey("CollectedEXP")) {
+						minerOBJ.setCollectedEXP(Integer.valueOf(jsonData.get("CollectedEXP").toString()));
+						minion.setPlaceHolder("%minion_collectedexp%", String.valueOf(minerOBJ.getCollectedEXP()));
+					}
 					
-					if(jsonData != null) {
-						// * Checks for saved collectedexp
-						if(jsonData.containsKey("CollectedEXP")) {
-							minerOBJ.setCollectedEXP(Integer.valueOf(jsonData.get("CollectedEXP").toString()));
-							minion.setPlaceHolder("%minion_collectedexp%", String.valueOf(minerOBJ.getCollectedEXP()));
-						}
-						
-						// * Checks for saved blocks mined
-						if(jsonData.containsKey("BlocksMined")) {
-							minerOBJ.setBlocksMined(Integer.valueOf(jsonData.get("BlocksMined").toString()));
-							minion.setPlaceHolder("%minion_blocksmined%", String.valueOf(minerOBJ.getBlocksMined()));
-						}
+					// * Checks for saved blocks mined
+					if(jsonData.containsKey("BlocksMined")) {
+						minerOBJ.setBlocksMined(Integer.valueOf(jsonData.get("BlocksMined").toString()));
+						minion.setPlaceHolder("%minion_blocksmined%", String.valueOf(minerOBJ.getBlocksMined()));
 					}
 				}
-				
-				// * Setting the minion as loaded (Will allow the minion to be interacted with)
-				minion.setLoaded(true);
-			}
-		}.runTaskLaterAsynchronously(Core.getInstance(), 5);
+            }
+			
+			// * Setting the minion as loaded (Will allow the minion to be interacted with)
+			minion.setLoaded(true);
+	   }, 5);
 	}
 	
 }

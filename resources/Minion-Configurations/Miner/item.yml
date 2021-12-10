@@ -1,0 +1,29 @@
+#==================================#
+# Minions-Revamped By TheCrappiest #
+#        Miner Minion Item         #
+#==================================#
+
+# Material - The material name of the item.
+Material: nether_star
+
+# Name - The display name of the item.
+Name: '&eMiner Minion'
+
+# Lore - The lore displayed on the item.
+Lore:
+  - ''
+  - '&7After interacting with a block'
+  - '&7while holding this item a'
+  - '&7minion will spawn.'
+  - ''
+
+# Glow - Should the item be glowing?
+Glow: true
+
+# HideAttributes - Should attributes of the item be hidden?
+HideAttributes: true
+
+# NBT_Tags - Keys and values of tags that will be added to the item.
+NBT_Tags:
+  MinionType: 'Miner'
+  CurrentOwner: '%uuid%'

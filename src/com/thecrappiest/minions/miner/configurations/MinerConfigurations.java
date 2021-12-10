@@ -16,58 +16,61 @@ import com.thecrappiest.minions.miner.MinerCore;
 
 public class MinerConfigurations {
 
-	private static MinerConfigurations instance;
+	private static MinerConfigurations instance = new MinerConfigurations();
 	public static MinerConfigurations getInstance() {
-		if(instance == null) {
-			instance = new MinerConfigurations();
-		}
 		return instance;
 	}
 	
 	// * Gets the file separator for the system
 	String sChar = File.separator;
 	
+	// * File path variables
+	private File coreDataFolder = Core.getInstance().getDataFolder();
+	private String minerConfigurations = coreDataFolder+sChar+"Minion-Configurations"+sChar+"Miner"+sChar;
+	
 	// * File for the miner minions item
-	private File item_file = new File(Core.instance.getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"item.yml");
+	private File item_file = new File(minerConfigurations+"item.yml");
 	
 	// * File for the miner minions inventory
-	private File inventory_file = new File(Core.instance.getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"inventory.yml");
+	private File inventory_file = new File(minerConfigurations+"inventory.yml");
 	
 	// * File for the miner minions entity
-	private File entity_file = new File(Core.instance.getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"entity.yml");
+	private File entity_file = new File(minerConfigurations+"entity.yml");
 	
 	// * File for the miner minions entity
-	private File settings_file = new File(Core.instance.getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"settings.yml");
+	private File settings_file = new File(minerConfigurations+"settings.yml");
 	
 	// * Load default item.yml
 	// * key = the file name you want to load
 	// * File names; entity, inventory, item and settings
 	public void loadDefault(String key) {
+		MinerCore miner = MinerCore.getInstance();
+		String configPath = "Minion-Configurations"+sChar+"Miner"+sChar;
 		switch(key.toLowerCase()) {
 		case "entity":
-			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"entity.yml", true);
-			File loadedEntity = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"entity.yml");
+			miner.saveResource(configPath+"entity.yml", true);
+			File loadedEntity = new File(miner.getDataFolder()+sChar+configPath+"entity.yml");
 			loadAndCopyDefaults(loadedEntity, entity_file);
 			break;
 		case "inventory":
-			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"inventory.yml", true);
-			File loadedInventory = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"inventory.yml");
+			miner.saveResource(configPath+"inventory.yml", true);
+			File loadedInventory = new File(miner.getDataFolder()+sChar+configPath+"inventory.yml");
 			loadAndCopyDefaults(loadedInventory, inventory_file);
 			break;
 		case "item":
-			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"item.yml", true);
-			File loadedItem = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"item.yml");
+			miner.saveResource(configPath+"item.yml", true);
+			File loadedItem = new File(miner.getDataFolder()+sChar+configPath+"item.yml");
 			loadAndCopyDefaults(loadedItem, item_file);
 			break;
 		case "settings":
-			MinerCore.instance.saveResource("Minion-Configurations"+sChar+"Miner"+sChar+"settings.yml", true);
-			File loadedSettings = new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner"+sChar+"settings.yml");
+			miner.saveResource(configPath+"settings.yml", true);
+			File loadedSettings = new File(miner.getDataFolder()+sChar+configPath+"settings.yml");
 			loadAndCopyDefaults(loadedSettings, settings_file);
 			break;
 		}
 		if(MinerCore.getInstance().getDataFolder().exists()) {
-			new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner").delete();
-			new File(MinerCore.getInstance().getDataFolder()+sChar+"Minion-Configurations").delete();
+			new File(miner.getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner").delete();
+			new File(miner.getDataFolder()+sChar+"Minion-Configurations").delete();
 			MinerCore.getInstance().getDataFolder().delete();
 		}
 	}

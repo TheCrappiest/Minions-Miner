@@ -3,25 +3,22 @@ package com.thecrappiest.minions.miner;
 import java.io.File;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.thecrappiest.minions.messages.ConsoleOutput;
 import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
-import com.thecrappiest.minions.miner.listeners.custom.AutoLoadMiners;
 import com.thecrappiest.minions.miner.listeners.custom.CreateMinionEntity;
 import com.thecrappiest.minions.miner.listeners.custom.PerformItemActions;
 import com.thecrappiest.minions.miner.listeners.custom.PickupMinion;
-import com.thecrappiest.minions.miner.listeners.custom.ReloadPlugin;
+import com.thecrappiest.minions.miner.listeners.custom.ConfigurationListeners;
 import com.thecrappiest.minions.miner.listeners.custom.SaveMinion;
 import com.thecrappiest.minions.miner.listeners.miniontask.LastPose;
 import com.thecrappiest.minions.miner.listeners.miniontask.PerformMinerTask;
 import com.thecrappiest.minions.miner.map.miniondata.MinerData;
-import com.thecrappiest.minions.miner.methods.LoadMiners;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 
 public class MinerCore extends JavaPlugin {
 
 	// * Instance of core class
-	public static MinerCore instance;
+	private static MinerCore instance;
 	
 	// * Gets the file separator for the system
 	String sChar = File.separator;
@@ -32,26 +29,16 @@ public class MinerCore extends JavaPlugin {
 		instance = this;
 		
 		// * Loads the configurations used by miner minions
-		ConsoleOutput.info("Configuration File Loader:");
-		ConsoleOutput.info(" ");
-		ConsoleOutput.info("Miner Minion Configurations:");
-		MinerConfigurations.getInstance().loadConfig("entity");
-		MinerConfigurations.getInstance().loadConfig("inventory");
-		MinerConfigurations.getInstance().loadConfig("item");
-		MinerConfigurations.getInstance().loadConfig("settings");
+		loadMinerConfigs();
 		
 		// * Loads all listeners used by the plugin
 		new CreateMinionEntity(this);
 		new LastPose(this);
-		new AutoLoadMiners(this);
 		new PickupMinion(this);
-		new ReloadPlugin(this);
+		new ConfigurationListeners(this);
 		new SaveMinion(this);
 		new PerformItemActions(this);
 		new PerformMinerTask(this);
-		
-		LoadMiners.loadMinersForOnline();
-		LoadMiners.AutoloadMinerMinions();
 	}
 	
 	// * Method runs when plugin disables
@@ -77,5 +64,13 @@ public class MinerCore extends JavaPlugin {
 	public static MinerCore getInstance() {
 		return instance;
 	}
+	
+	public void loadMinerConfigs() {
+        MinerConfigurations minerConfig = MinerConfigurations.getInstance();
+        minerConfig.loadConfig("entity");
+        minerConfig.loadConfig("inventory");
+        minerConfig.loadConfig("item");
+        minerConfig.loadConfig("settings");
+    }
 	
 }
