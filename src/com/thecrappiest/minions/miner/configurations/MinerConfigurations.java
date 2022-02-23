@@ -2,13 +2,14 @@ package com.thecrappiest.minions.miner.configurations;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import com.google.common.io.Files;
 import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.configuration.MinionTypeConfigurations;
 import com.thecrappiest.minions.messages.ConsoleOutput;
@@ -16,193 +17,86 @@ import com.thecrappiest.minions.miner.MinerCore;
 
 public class MinerConfigurations {
 
-	private static MinerConfigurations instance = new MinerConfigurations();
+	// * Creates or returns an instance of this class
+	private static MinerConfigurations instance;
 	public static MinerConfigurations getInstance() {
-		return instance;
+		return instance = instance == null ? new MinerConfigurations() : instance;
 	}
-	
+
 	// * Gets the file separator for the system
 	String sChar = File.separator;
 	
-	// * File path variables
+	// * Initializes some variables
+	private MinerCore minerCore = MinerCore.getInstance();
 	private File coreDataFolder = Core.getInstance().getDataFolder();
 	private String minerConfigurations = coreDataFolder+sChar+"Minion-Configurations"+sChar+"Miner"+sChar;
 	
-	// * File for the miner minions item
-	private File item_file = new File(minerConfigurations+"item.yml");
+	// * Generates new map to be used to cache miner files
+	private Map<String, File> minerFiles = new HashMap<>();
 	
-	// * File for the miner minions inventory
-	private File inventory_file = new File(minerConfigurations+"inventory.yml");
-	
-	// * File for the miner minions entity
-	private File entity_file = new File(minerConfigurations+"entity.yml");
-	
-	// * File for the miner minions entity
-	private File settings_file = new File(minerConfigurations+"settings.yml");
-	
-	// * Load default item.yml
-	// * key = the file name you want to load
+	// * Retrieves files based on the key provided
+	// * key = The file name you want to load
 	// * File names; entity, inventory, item and settings
-	public void loadDefault(String key) {
-		MinerCore miner = MinerCore.getInstance();
-		String configPath = "Minion-Configurations"+sChar+"Miner"+sChar;
-		switch(key.toLowerCase()) {
-		case "entity":
-			miner.saveResource(configPath+"entity.yml", true);
-			File loadedEntity = new File(miner.getDataFolder()+sChar+configPath+"entity.yml");
-			loadAndCopyDefaults(loadedEntity, entity_file);
-			break;
-		case "inventory":
-			miner.saveResource(configPath+"inventory.yml", true);
-			File loadedInventory = new File(miner.getDataFolder()+sChar+configPath+"inventory.yml");
-			loadAndCopyDefaults(loadedInventory, inventory_file);
-			break;
-		case "item":
-			miner.saveResource(configPath+"item.yml", true);
-			File loadedItem = new File(miner.getDataFolder()+sChar+configPath+"item.yml");
-			loadAndCopyDefaults(loadedItem, item_file);
-			break;
-		case "settings":
-			miner.saveResource(configPath+"settings.yml", true);
-			File loadedSettings = new File(miner.getDataFolder()+sChar+configPath+"settings.yml");
-			loadAndCopyDefaults(loadedSettings, settings_file);
-			break;
-		}
-		if(MinerCore.getInstance().getDataFolder().exists()) {
-			new File(miner.getDataFolder()+sChar+"Minion-Configurations"+sChar+"Miner").delete();
-			new File(miner.getDataFolder()+sChar+"Minion-Configurations").delete();
-			MinerCore.getInstance().getDataFolder().delete();
-		}
-	}
-	
-	public void loadAndCopyDefaults(File load, File copy) {
-		if(load.exists()) {
+	public File getFile(String key) {
+		if(minerFiles.containsKey(key))
+			return minerFiles.get(key);
+		
+		File f = new File(minerConfigurations+key+".yml");
+		if(!f.exists()) {
+			String configPath = "Minion-Configurations/Miner/";
 			try {
-				Core.getInstance().createFile(copy);
-				Files.copy(load, copy);
+				YamlConfiguration.loadConfiguration(new InputStreamReader(minerCore.getResource(configPath+key+".yml"))).save(f);
 			} catch (IOException e) {
-				ConsoleOutput.debug("Butchers "+copy.getName()+" has failed to copy to save location. Please message the author with any stack traces logged.");
+				ConsoleOutput.warn("Attempting to load "+key.toLowerCase()+".yml defaults for Collector has failed. Please message the author with any stack traces logged.");
 				e.printStackTrace();
 			}
-			load.delete();
 		}
+		
+		return f;
 	}
 	
-	// * Map holds yaml configurations for easy access
-	// * key = file name
-	// * value = yaml configuration
-	Map<String, YamlConfiguration> yamlConfigs = new HashMap<>();
+	// * Generates new map to be used to cache miner yamlconfigurations
+	Map<String, YamlConfiguration> minerYamls = new HashMap<>();
 	
-	// * Loads and/or retrieves the yaml configuration
-	// * key = the file name you want to retrieve
+	// * Retrieves yamlconfigurations based on the key provided
+	// * key = The yamlconfiguration name you want to load
+	// * File names; entity, inventory, item and settings
 	public YamlConfiguration getYaml(String key) {
-		if(yamlConfigs.containsKey(key)) {
-			return yamlConfigs.get(key);
-		}
+		if(minerYamls.containsKey(key))
+			return minerYamls.get(key);
 		
-		YamlConfiguration yml = null;
-		
-		switch(key.toLowerCase()) {
-		case "entity":
-			if(!entity_file.exists()) {
-				loadDefault(key);
-			}
-			yml = YamlConfiguration.loadConfiguration(entity_file);
-			break;
-		case "inventory":
-			if(!inventory_file.exists()) {
-				loadDefault(key);
-			}
-			yml = YamlConfiguration.loadConfiguration(inventory_file);
-			break;
-		case "item":
-			if(!item_file.exists()) {
-				loadDefault(key);
-			}
-			yml = YamlConfiguration.loadConfiguration(item_file);
-			break;
-		case "settings":
-			if(!settings_file.exists()) {
-				loadDefault(key);
-			}
-			yml = YamlConfiguration.loadConfiguration(settings_file);
-			break;
-		}
-		
-		if(yml != null) {
-		    MinionTypeConfigurations.getInstance().updateConfig("MINER", key.toLowerCase(), yml);
-		    yamlConfigs.put(key, yml);
-		}
-		
-		return yamlConfigs.get(key);
+		YamlConfiguration yaml = YamlConfiguration.loadConfiguration(getFile(key));
+		MinionTypeConfigurations.getInstance().updateConfig("MINER", key.toLowerCase(), yaml);
+		minerYamls.put(key, yaml);
+		return yaml;
 	}
 	
-	// * Saves or reloads the yaml configuration
-	// * key = file name
+	// * Saves or reloads the yamlconfiguration
+	// * key = File name
 	// * reload = Should the yaml be saved or reloaded
 	public void saveYaml(String key, boolean reload) {
+		File f = getFile(key);
 		YamlConfiguration yaml = getYaml(key);
+		if(yaml == null) return;
 		
-		if(yaml != null) {
-			try{
-				if(reload) {
-					switch(key.toLowerCase()) {
-					case "entity": yaml.load(entity_file); break;
-					case "inventory": yaml.load(inventory_file); break;
-					case "item": yaml.load(item_file); break;
-					case "settings": yaml.load(settings_file); break;
-					}
-				}else {
-					switch(key.toLowerCase()) {
-					case "entity": yaml.save(entity_file); break;
-					case "inventory": yaml.save(inventory_file); break;
-					case "item": yaml.save(item_file); break;
-					case "settings": yaml.save(settings_file); break;
-					}
-				}
-			}catch (IOException | InvalidConfigurationException exc) {
-				ConsoleOutput.warn("An error has occured while saving or loading the "+key+" data for miner.");
-				exc.printStackTrace();
-			}
-			
-			yamlConfigs.put(key, yaml);
-			MinionTypeConfigurations.getInstance().updateConfig("MINER", key.toLowerCase(), yaml);
+		try {
+			if(reload)
+				yaml.load(f);
+			else
+				yaml.save(f);
+		} catch (IOException | InvalidConfigurationException e) {
+			ConsoleOutput.warn("An error has occured while saving or loading the "+key+" data for collector.");
+			e.printStackTrace();
 		}
+		MinionTypeConfigurations.getInstance().updateConfig("MINER", key.toLowerCase(), yaml);
+		minerYamls.put(key, yaml);
 	}
 	
-	// * Loads or attempts to load the given configuration
-	public void loadConfig(String key) {
-		YamlConfiguration yaml = getYaml(key);
-		if(yaml != null) {
-			if(!yaml.getKeys(false).isEmpty()) {
-			    ConsoleOutput.info(key.toLowerCase()+".yml for miner loaded");
-			}else {
-				ConsoleOutput.info(key.toLowerCase()+".yml for miner was loaded but is empty. Attempting to load default values...");
-				loadDefault(key);
-				yaml = getYaml(key);
-				if(yaml != null && yaml.getKeys(false).isEmpty()) {
-					ConsoleOutput.warn("Attempting to load "+key.toLowerCase()+".yml defaults for miner has failed. Please message the author with any stack traces logged.");
-				}else {
-					ConsoleOutput.info("The attempt to load "+key.toLowerCase()+".yml defaults for miner were succesful.");
-				}
-			}
-		}
-	}
-	
-	// * Clears all data saved in this class
-	// * Useful for when users /reload or just to clear up memory
-	// * save - Should the yaml files be saved before cleared
 	public static void clear(boolean save) {
-		// * If true will save the configurations
-		if(save) {
-			getInstance().saveYaml("entity", true);
-			getInstance().saveYaml("inventory", true);
-			getInstance().saveYaml("item", true);
-			getInstance().saveYaml("settings", true);
-		}
+		if(save)
+			Arrays.asList("entity", "inventory", "item", "settings").forEach(key -> getInstance().saveYaml(key, true));
 		
-		// * Clears the yaml map
-		getInstance().yamlConfigs.clear();
+		getInstance().minerYamls.clear();
+		getInstance().minerFiles.clear();
 	}
-	
 }

@@ -20,7 +20,6 @@ import com.thecrappiest.minions.maps.miniondata.MinionData;
 import com.thecrappiest.minions.methods.MinionEntityMethods;
 import com.thecrappiest.minions.miner.MinerCore;
 import com.thecrappiest.minions.miner.events.MinerBreakBlockAttemptEvent;
-import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 import com.thecrappiest.objects.MinionInventory;
@@ -43,11 +42,10 @@ public class PerformMinerTask implements Listener {
 		MinionInventory minionInv = MinionData.getInstance().getInventoryForMinion(minion);
 		ArmorStand as = (ArmorStand) minion.getEntity();
 		
-		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
+		if(!(minion instanceof Miner)) {return;}
 		
 		// * Sets variable for miner object
-		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
-		if(miner == null) {return;}
+		Miner miner = (Miner) minion;
 		
 		// * Sets block variables
 		Block block = as.getLocation().getBlock().getRelative(BlockFace.valueOf(MinionEntityMethods.getDirection(minion)));

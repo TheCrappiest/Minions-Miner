@@ -1,10 +1,13 @@
 package com.thecrappiest.minions.miner;
 
 import java.io.File;
+import java.util.Arrays;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.thecrappiest.minions.messages.ConsoleOutput;
 import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
-import com.thecrappiest.minions.miner.listeners.custom.CreateMinionEntity;
+import com.thecrappiest.minions.miner.listeners.custom.LoadMinionData;
 import com.thecrappiest.minions.miner.listeners.custom.PerformItemActions;
 import com.thecrappiest.minions.miner.listeners.custom.PickupMinion;
 import com.thecrappiest.minions.miner.listeners.custom.ConfigurationListeners;
@@ -12,8 +15,6 @@ import com.thecrappiest.minions.miner.listeners.custom.SaveMinion;
 import com.thecrappiest.minions.miner.listeners.miniontask.LastPose;
 import com.thecrappiest.minions.miner.listeners.miniontask.PerformMinerTask;
 import com.thecrappiest.minions.miner.map.miniondata.MinerData;
-import com.thecrappiest.minions.miner.objects.Miner;
-import com.thecrappiest.objects.Minion;
 
 public class MinerCore extends JavaPlugin {
 
@@ -32,7 +33,7 @@ public class MinerCore extends JavaPlugin {
 		loadMinerConfigs();
 		
 		// * Loads all listeners used by the plugin
-		new CreateMinionEntity(this);
+		new LoadMinionData(this);
 		new LastPose(this);
 		new PickupMinion(this);
 		new ConfigurationListeners(this);
@@ -45,16 +46,11 @@ public class MinerCore extends JavaPlugin {
 	public void onDisable() {
 		
 		// * Saves all data for loaded miners
-		for(Minion minion : MinerData.getInstance().miners.keySet()) {
-			
-			Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
-			
-			if(miner != null) {
-				// * Adds data to minion object thats saved by the core
-				minion.addSaveData("CollectedEXP", miner.getCollectedEXP());
-				minion.addSaveData("BlocksMined", miner.getBlocksMined());
-			}
-		}
+		MinerData md = MinerData.getInstance();
+		md.miners.forEach(miner -> {
+			miner.addSaveData("CollectedEXP", miner.getCollectedEXP());
+			miner.addSaveData("BlocksMined", miner.getBlocksMined());
+		});
 		
 		// * Just for the sake of it
 		instance = null;
@@ -66,11 +62,11 @@ public class MinerCore extends JavaPlugin {
 	}
 	
 	public void loadMinerConfigs() {
-        MinerConfigurations minerConfig = MinerConfigurations.getInstance();
-        minerConfig.loadConfig("entity");
-        minerConfig.loadConfig("inventory");
-        minerConfig.loadConfig("item");
-        minerConfig.loadConfig("settings");
-    }
+		MinerConfigurations minerConfigs = MinerConfigurations.getInstance();
+		Arrays.asList("entity", "inventory", "item", "settings").forEach(key -> {
+			minerConfigs.getYaml(key);
+			ConsoleOutput.info(key.toLowerCase()+".yml for Collector loaded");
+		});
+	}
 	
 }

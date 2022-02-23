@@ -7,15 +7,12 @@ import org.bukkit.event.Listener;
 
 import com.thecrappiest.minions.events.PerformItemActionsEvent;
 import com.thecrappiest.minions.miner.MinerCore;
-import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 
 public class PerformItemActions implements Listener {
 
-	public final MinerCore minerCore;
 	public PerformItemActions(MinerCore minerCore) {
-		this.minerCore = minerCore;
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
@@ -25,10 +22,10 @@ public class PerformItemActions implements Listener {
 		// * Sets variables used by the event
 		Minion minion = event.getMinion();
 		
-		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
+		if(!(minion instanceof Miner)) {return;}
 		
 		Player player = event.getPlayer();
-		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
+		Miner miner = (Miner) minion;
 		
 		// * Creates switch for actions used
 		switch(event.getAction().toUpperCase()) {

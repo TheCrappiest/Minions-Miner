@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 
+import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.objects.Minion;
 
 public class Miner extends Minion {
 	
-	public Miner(Entity entity, UUID entityUUID, UUID owner, String type) {
-		super(entity, entityUUID, owner, type);
+	public Miner(Minion minion) {
+		super(minion.getEntity(), minion.getEntityID(), minion.getOwner(), minion.getType());
+		MinerData.getInstance().miners.add(this);
 	}
 
 	private boolean bottleEXP = false;

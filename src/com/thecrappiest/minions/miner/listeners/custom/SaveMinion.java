@@ -5,27 +5,24 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import com.thecrappiest.minions.events.SaveMinionEvent;
 import com.thecrappiest.minions.miner.MinerCore;
-import com.thecrappiest.minions.miner.map.miniondata.MinerData;
 import com.thecrappiest.minions.miner.objects.Miner;
 import com.thecrappiest.objects.Minion;
 
 public class SaveMinion implements Listener {
 
-	public final MinerCore minerCore;
 	public SaveMinion(MinerCore minerCore) {
-		this.minerCore = minerCore;
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
 	
 	@EventHandler
 	public void onMinionSave(SaveMinionEvent event) {
 		Minion minion = event.getMinion();
-		Miner miner = MinerData.getInstance().getMinerFromMinion(minion);
+		if(!(minion instanceof Miner)) return;
 		
-		if(miner == null) {return;}
+		Miner miner = (Miner) minion;
 		
-		minion.addSaveData("CollectedEXP", miner.getCollectedEXP());
-		minion.addSaveData("BlocksMined", miner.getBlocksMined());
+		miner.addSaveData("CollectedEXP", miner.getCollectedEXP());
+		miner.addSaveData("BlocksMined", miner.getBlocksMined());
 	}
 	
 }
