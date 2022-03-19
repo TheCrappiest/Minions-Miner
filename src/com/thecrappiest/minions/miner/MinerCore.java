@@ -8,7 +8,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.thecrappiest.minions.messages.ConsoleOutput;
 import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
 import com.thecrappiest.minions.miner.listeners.custom.LoadMinionData;
-import com.thecrappiest.minions.miner.listeners.custom.PerformItemActions;
 import com.thecrappiest.minions.miner.listeners.custom.PickupMinion;
 import com.thecrappiest.minions.miner.listeners.custom.ConfigurationListeners;
 import com.thecrappiest.minions.miner.listeners.custom.SaveMinion;
@@ -38,7 +37,6 @@ public class MinerCore extends JavaPlugin {
 		new PickupMinion(this);
 		new ConfigurationListeners(this);
 		new SaveMinion(this);
-		new PerformItemActions(this);
 		new PerformMinerTask(this);
 	}
 	
@@ -65,7 +63,7 @@ public class MinerCore extends JavaPlugin {
 		MinerConfigurations minerConfigs = MinerConfigurations.getInstance();
 		Arrays.asList("entity", "inventory", "item", "settings").forEach(key -> {
 			minerConfigs.getYaml(key);
-			ConsoleOutput.info(key.toLowerCase()+".yml for Collector loaded");
+			ConsoleOutput.info(key.toLowerCase()+".yml for Miner loaded");
 		});
 	}
 	

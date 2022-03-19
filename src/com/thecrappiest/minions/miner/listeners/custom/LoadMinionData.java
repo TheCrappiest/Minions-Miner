@@ -29,7 +29,7 @@ public class LoadMinionData implements Listener {
 		Minion minion = event.getMinion();
 		String minionType = minion.getType();
 		
-		if(!minion.getType().equalsIgnoreCase("MINER")) {return;}
+		if(!minionType.equalsIgnoreCase("MINER")) {return;}
 		
 		Miner miner = new Miner(minion);
 		event.setMinion(miner);
@@ -75,12 +75,6 @@ public class LoadMinionData implements Listener {
 		if(event.getData() == null) return;
 		JSONObject jsonData = ConversionMethods.parseString(event.getData());
 		if(jsonData == null) return;
-		
-		// * Checks for saved collectedexp
-		if(jsonData.containsKey("CollectedEXP")) {
-			miner.setCollectedEXP(Integer.valueOf(jsonData.get("CollectedEXP").toString()));
-			miner.setPlaceHolder("%minion_collectedexp%", String.valueOf(miner.getCollectedEXP()));
-		}
 		
 		// * Checks for saved blocks mined
 		if(jsonData.containsKey("BlocksMined")) {

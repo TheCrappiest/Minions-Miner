@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -56,13 +57,7 @@ public class PickupMinion implements Listener {
 		}
 		
 		ArmorStand as = (ArmorStand) minion.getEntity();
-		ItemStack heldItem = null;
-		
-		if(Core.isLegacy()) {
-			heldItem = as.getEquipment().getItemInHand();
-		}else {
-			heldItem = as.getEquipment().getItemInMainHand();
-		}
+		ItemStack heldItem = Core.isLegacy() ? as.getEquipment().getItemInHand() : as.getEquipment().getItemInMainHand();
 		
 		// * If minion is holding a non default item it will be given to the player
 		if(!ItemNBT.getNBTUtils().itemContainsNBTTag(heldItem, "MinionsHeldItem")) {
@@ -78,13 +73,13 @@ public class PickupMinion implements Listener {
 		nbtTags.put("BlocksMined", String.valueOf(miner.getBlocksMined()));
 		nbtTags.put("CollectedEXP", String.valueOf(miner.getCollectedEXP()));
 		
+		YamlConfiguration itemData = MinerConfigurations.getInstance().getYaml("item");
+		
 		// * Adds the minion item to the players inventory
 		player.getInventory().addItem(
 				ItemNBT.getNBTUtils().addNBTTagString(
-						ItemCreation.createItem(
-								MinerConfigurations.getInstance().getYaml("item").getConfigurationSection("")
-								, minion.getPlaceHolders())
-						, "MinionType", "Miner", nbtTags));
+						ItemCreation.createItem(itemData.getConfigurationSection(""), minion.getPlaceHolders())
+						, "MinionType", itemData.getString("NBT_Tags.MinionType"), nbtTags));
 		
 		// * Unloads and removes the miner and minion data
 		MinionData.getInstance().unloadMinion(minion, true);
