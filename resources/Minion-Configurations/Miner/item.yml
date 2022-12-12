@@ -26,4 +26,4 @@ HideAttributes: true
 # NBT_Tags - Keys and values of tags that will be added to the item.
 NBT_Tags:
   MinionType: 'Miner'
-  CurrentOwner: '%uuid%'
+  CurrentOwner: '%minion_owner%'

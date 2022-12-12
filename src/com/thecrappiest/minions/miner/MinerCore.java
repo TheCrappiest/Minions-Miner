@@ -19,7 +19,7 @@ public class MinerCore extends JavaPlugin {
 
 	// * Instance of core class
 	private static MinerCore instance;
-	
+
 	// * Gets the file separator for the system
 	String sChar = File.separator;
 
@@ -27,10 +27,10 @@ public class MinerCore extends JavaPlugin {
 	public void onEnable() {
 		// * Sets instance
 		instance = this;
-		
+
 		// * Loads the configurations used by miner minions
 		loadMinerConfigs();
-		
+
 		// * Loads all listeners used by the plugin
 		new LoadMinionData(this);
 		new LastPose(this);
@@ -39,32 +39,30 @@ public class MinerCore extends JavaPlugin {
 		new SaveMinion(this);
 		new PerformMinerTask(this);
 	}
-	
+
 	// * Method runs when plugin disables
 	public void onDisable() {
-		
+
 		// * Saves all data for loaded miners
 		MinerData md = MinerData.getInstance();
-		md.miners.forEach(miner -> {
-			miner.addSaveData("CollectedEXP", miner.getCollectedEXP());
-			miner.addSaveData("BlocksMined", miner.getBlocksMined());
-		});
+		md.miners.forEach(miner -> miner.addSaveData("BlocksMined", miner.getBlocksMined()));
+		md.miners.clear();
 		
 		// * Just for the sake of it
 		instance = null;
 	}
-	
+
 	// * Returns an instance of the core
 	public static MinerCore getInstance() {
 		return instance;
 	}
-	
+
 	public void loadMinerConfigs() {
 		MinerConfigurations minerConfigs = MinerConfigurations.getInstance();
 		Arrays.asList("entity", "inventory", "item", "settings").forEach(key -> {
 			minerConfigs.getYaml(key);
-			ConsoleOutput.info(key.toLowerCase()+".yml for Miner loaded");
+			ConsoleOutput.info(key.toLowerCase() + ".yml for Miner loaded");
 		});
 	}
-	
+
 }

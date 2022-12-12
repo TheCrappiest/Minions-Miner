@@ -13,16 +13,15 @@ public class SaveMinion implements Listener {
 	public SaveMinion(MinerCore minerCore) {
 		Bukkit.getPluginManager().registerEvents(this, minerCore);
 	}
-	
+
 	@EventHandler
 	public void onMinionSave(SaveMinionEvent event) {
 		Minion minion = event.getMinion();
-		if(!(minion instanceof Miner)) return;
-		
+		if (!(minion instanceof Miner))
+			return;
+
 		Miner miner = (Miner) minion;
-		
-		miner.addSaveData("CollectedEXP", miner.getCollectedEXP());
 		miner.addSaveData("BlocksMined", miner.getBlocksMined());
 	}
-	
+
 }

@@ -24,6 +24,14 @@ Movement_Speed_Permissions:
   - 'Minions.permission.speed.donor 5'
   - 'Minions.permission.speed.premium 1'
 
+# Default radius - All new miners will spawn with this radius.
+Default_Radius: 1
+
+# Radius permissions - Editable permissions for the radius of the miner minion.
+Radius_Permissions:
+  - 'Minions.permission.miner.radius.donor 3'
+  - 'Minions.permission.miner.radius.premium 5'
+
 # Keep_Chunk_Loaded - Should the chunk this minion is located in stay loaded?
 # If the chunk unloaded the plugin can not guarantee the minion will complete its tasks or even preform its movements.
 Keep_Chunk_Loaded: true
