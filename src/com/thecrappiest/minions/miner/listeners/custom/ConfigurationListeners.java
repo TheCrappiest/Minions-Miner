@@ -12,23 +12,23 @@ import com.thecrappiest.minions.miner.configurations.MinerConfigurations;
 
 public class ConfigurationListeners implements Listener {
 
-	public final MinerCore minerCore;
+    public final MinerCore minerCore;
 
-	public ConfigurationListeners(MinerCore minerCore) {
-		this.minerCore = minerCore;
-		Bukkit.getPluginManager().registerEvents(this, minerCore);
-	}
+    public ConfigurationListeners(MinerCore minerCore) {
+        this.minerCore = minerCore;
+        Bukkit.getPluginManager().registerEvents(this, minerCore);
+    }
 
-	@EventHandler
-	public void onPluginReload(ReloadPluginEvent event) {
-		MinerConfigurations.clear(true);
-	}
+    @EventHandler
+    public void onPluginReload(ReloadPluginEvent event) {
+        MinerConfigurations.clear(true);
+    }
 
-	@EventHandler
-	public void onLoadConfigurations(LoadConfigurationsEvent event) {
-		ConsoleOutput.info(" ");
-		ConsoleOutput.info("Miner Minion Configurations:");
-		this.minerCore.loadMinerConfigs();
-	}
+    @EventHandler
+    public void onLoadConfigurations(LoadConfigurationsEvent event) {
+        ConsoleOutput.info(" ");
+        ConsoleOutput.info("Miner Minion Configurations:");
+        this.minerCore.loadMinerConfigs();
+    }
 
 }

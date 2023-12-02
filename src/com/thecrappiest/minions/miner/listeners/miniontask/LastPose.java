@@ -11,27 +11,22 @@ import com.thecrappiest.objects.Minion;
 
 public class LastPose implements Listener {
 
-	public final MinerCore minerCore;
+    public final MinerCore minerCore;
 
-	public LastPose(MinerCore minerCore) {
-		this.minerCore = minerCore;
-		Bukkit.getPluginManager().registerEvents(this, minerCore);
-	}
+    public LastPose(MinerCore minerCore) {
+        this.minerCore = minerCore;
+        Bukkit.getPluginManager().registerEvents(this, minerCore);
+    }
 
-	@EventHandler
-	public void onLastPose(MinionLastPoseEvent event) {
-		// * Sets variable of minion
-		Minion minion = event.getMinion();
+    @EventHandler
+    public void onLastPose(MinionLastPoseEvent event) {
+        Minion minion = event.getMinion();
 
-		// * Tests if minion is a miner
-		if (!(minion instanceof Miner)) {
-			return;
-		}
+        if (!(minion instanceof Miner))
+            return;
 
-		// * Creates and calls the MinionPerformTaskEvent (So
-		// MinionLastPoseEvent can finish and not hold up the server.)
-		MinionPerformTaskEvent minionPerformTask = new MinionPerformTaskEvent(minion);
-		Bukkit.getPluginManager().callEvent(minionPerformTask);
-	}
+        MinionPerformTaskEvent minionPerformTask = new MinionPerformTaskEvent(minion);
+        Bukkit.getPluginManager().callEvent(minionPerformTask);
+    }
 
 }

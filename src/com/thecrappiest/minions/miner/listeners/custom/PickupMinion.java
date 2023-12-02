@@ -25,65 +25,56 @@ import com.thecrappiest.objects.Minion;
 
 public class PickupMinion implements Listener {
 
-	public PickupMinion(MinerCore minerCore) {
-		Bukkit.getPluginManager().registerEvents(this, minerCore);
-	}
+    public PickupMinion(MinerCore minerCore) {
+        Bukkit.getPluginManager().registerEvents(this, minerCore);
+    }
 
-	@SuppressWarnings("deprecation")
-	@EventHandler(ignoreCancelled = true)
-	public void onPickupMinion(PickupMinionEvent event) {
-		Player player = event.getPlayer();
-		Minion minion = event.getMinion();
+    @SuppressWarnings("deprecation")
+    @EventHandler(ignoreCancelled = true)
+    public void onPickupMinion(PickupMinionEvent event) {
+        Player player = event.getPlayer();
+        Minion minion = event.getMinion();
 
-		// * Tests if minion is a miner
-		if (!(minion instanceof Miner))
-			return;
+        if (!(minion instanceof Miner))
+            return;
 
-		// * Creates map that will have data stored to it
-		Map<String, Object> nbtTags = new HashMap<>();
+        Map<String, Object> nbtTags = new HashMap<>();
 
-		// * Tests if health should be added to stored data
-		if (minion.useHealth() && minion.getHealth() != -1) {
-			nbtTags.put("Health", minion.getHealth());
-			if (minion.getMaxHealth() != -1)
-				nbtTags.put("MaxHealth", minion.getMaxHealth());
-		}
+        if (minion.useHealth() && minion.getHealth() != -1) {
+            nbtTags.put("Health", minion.getHealth());
+            if (minion.getMaxHealth() != -1)
+                nbtTags.put("MaxHealth", minion.getMaxHealth());
+        }
 
-		// * Tests if hunger should be added to stored data
-		if (minion.useHunger() && minion.getHunger() != -1) {
-			nbtTags.put("Hunger", minion.getHunger());
-			if (minion.getMaxHunger() != -1)
-				nbtTags.put("MaxHunger", minion.getMaxHunger());
-		}
+        if (minion.useHunger() && minion.getHunger() != -1) {
+            nbtTags.put("Hunger", minion.getHunger());
+            if (minion.getMaxHunger() != -1)
+                nbtTags.put("MaxHunger", minion.getMaxHunger());
+        }
 
-		ArmorStand as = (ArmorStand) minion.getEntity();
-		ItemStack heldItem = Core.isLegacy() ? as.getEquipment().getItemInHand()
-				: as.getEquipment().getItemInMainHand();
+        ArmorStand as = (ArmorStand) minion.getEntity();
+        ItemStack heldItem = Core.isLegacy() ? as.getEquipment().getItemInHand()
+                : as.getEquipment().getItemInMainHand();
 
-		// * If minion is holding a non default item it will be given to the
-		// player
-		if (!NBTMethods.get().hasKey(heldItem, "MinionsHeldItem")) {
-			if (player.getInventory().firstEmpty() == -1)
-				player.getWorld().dropItemNaturally(player.getLocation(), heldItem);
-			else
-				player.getInventory().addItem(heldItem);
-		}
+        if (!NBTMethods.get().hasKey(heldItem, "MinionsHeldItem")) {
+            if (player.getInventory().firstEmpty() == -1)
+                player.getWorld().dropItemNaturally(player.getLocation(), heldItem);
+            else
+                player.getInventory().addItem(heldItem);
+        }
 
-		// * Gets miner object and stores the miner object data
-		Miner miner = (Miner) minion;
-		nbtTags.put("BlocksMined", miner.getBlocksMined());
-		nbtTags.put("CollectedEXP", miner.getCollectedEXP());
-		nbtTags.put("Radius", miner.getRadius());
+        Miner miner = (Miner) minion;
+        nbtTags.put("BlocksMined", miner.getBlocksMined());
+        nbtTags.put("CollectedEXP", miner.getCollectedEXP());
+        nbtTags.put("Radius", miner.getRadius());
 
-		YamlConfiguration itemData = MinerConfigurations.getInstance().getYaml("item");
+        YamlConfiguration itemData = MinerConfigurations.getInstance().getYaml("item");
 
-		// * Adds the minion item to the players inventory
-		player.getInventory().addItem(NBTUtility.get().addNBTTags(
-				ItemCreation.createItem(itemData.getConfigurationSection(""), minion.getPlaceHolders()), nbtTags));
+        player.getInventory().addItem(NBTUtility.get().addNBTTags(
+                ItemCreation.createItem(itemData.getConfigurationSection(""), minion.getPlaceHolders()), nbtTags));
 
-		// * Unloads and removes the miner and minion data
-		MinionData.getInstance().unloadMinion(minion, true);
-		MinerData.getInstance().miners.remove(minion);
-	}
+        MinionData.getInstance().unloadMinion(minion, true);
+        MinerData.getInstance().miners.remove(minion);
+    }
 
 }

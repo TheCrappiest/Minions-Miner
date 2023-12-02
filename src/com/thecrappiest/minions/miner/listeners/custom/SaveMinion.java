@@ -10,18 +10,18 @@ import com.thecrappiest.objects.Minion;
 
 public class SaveMinion implements Listener {
 
-	public SaveMinion(MinerCore minerCore) {
-		Bukkit.getPluginManager().registerEvents(this, minerCore);
-	}
+    public SaveMinion(MinerCore minerCore) {
+        Bukkit.getPluginManager().registerEvents(this, minerCore);
+    }
 
-	@EventHandler
-	public void onMinionSave(SaveMinionEvent event) {
-		Minion minion = event.getMinion();
-		if (!(minion instanceof Miner))
-			return;
+    @EventHandler
+    public void onMinionSave(SaveMinionEvent event) {
+        Minion minion = event.getMinion();
+        if (!(minion instanceof Miner))
+            return;
 
-		Miner miner = (Miner) minion;
-		miner.addSaveData("BlocksMined", miner.getBlocksMined());
-	}
+        Miner miner = (Miner) minion;
+        miner.addSaveData("BlocksMined", miner.getBlocksMined());
+    }
 
 }

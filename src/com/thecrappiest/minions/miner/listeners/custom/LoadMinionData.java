@@ -22,77 +22,69 @@ import com.thecrappiest.versionclasses.VersionMaterial;
 
 public class LoadMinionData implements Listener {
 
-	public LoadMinionData(MinerCore minerCore) {
-		Bukkit.getPluginManager().registerEvents(this, minerCore);
-	}
+    public LoadMinionData(MinerCore minerCore) {
+        Bukkit.getPluginManager().registerEvents(this, minerCore);
+    }
 
-	// * Creates a miner object and loads default values
-	@EventHandler
-	public void onCreateMinionObject(CreateMinionObjectEvent event) {
-		Minion minion = event.getMinion();
-		String minionType = minion.getType();
+    @EventHandler
+    public void onCreateMinionObject(CreateMinionObjectEvent event) {
+        Minion minion = event.getMinion();
+        String minionType = minion.getType();
 
-		if (!minionType.equalsIgnoreCase("MINER"))
-			return;
+        if (!minionType.equalsIgnoreCase("MINER"))
+            return;
 
-		Miner miner = new Miner(minion);
-		event.setMinion(miner);
-		YamlConfiguration entitySettings = MinionTypeConfigurations.getInstance().getYaml(minionType, "settings");
+        Miner miner = new Miner(minion);
+        event.setMinion(miner);
+        YamlConfiguration entitySettings = MinionTypeConfigurations.getInstance().getYaml(minionType, "settings");
 
-		// * Setting default placeholders for miner
-		miner.setPlaceHolder("%minion_blocksmined%", "0");
+        miner.setPlaceHolder("%minion_blocksmined%", "0");
 
-		// * Adds blocks that give exp to map
-		if (entitySettings.isSet("EXP_Blocks")
-				&& !entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false).isEmpty()) {
-			for (String blockType : entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false)) {
-				Material material = VersionMaterial.valueOf(blockType).getMaterial();
-				if (material != null && material != VersionMaterial.AIR.getMaterial()) {
-					miner.addEXPForBlock(material, entitySettings.getInt("EXP_Blocks." + blockType));
-				}
-			}
-		}
+        if (entitySettings.isSet("EXP_Blocks")
+                && !entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false).isEmpty()) {
+            for (String blockType : entitySettings.getConfigurationSection("EXP_Blocks").getKeys(false)) {
+                Material material = VersionMaterial.valueOf(blockType).getMaterial();
+                if (material != null && material != VersionMaterial.AIR.getMaterial())
+                    miner.addEXPForBlock(material, entitySettings.getInt("EXP_Blocks." + blockType));
+            }
+        }
 
-		// * Adds list of mineable block types
-		if (entitySettings.isSet("Mineable")) {
-			for (String blockType : entitySettings.getStringList("Mineable")) {
-				Material material = VersionMaterial.valueOf(blockType).getMaterial();
-				if (material != null && material != VersionMaterial.AIR.getMaterial()) {
-					miner.addMinableBlock(material);
-				}
-			}
-		}
+        if (entitySettings.isSet("Mineable")) {
+            for (String blockType : entitySettings.getStringList("Mineable")) {
+                Material material = VersionMaterial.valueOf(blockType).getMaterial();
+                if (material != null && material != VersionMaterial.AIR.getMaterial())
+                    miner.addMinableBlock(material);
+            }
+        }
 
-		// * Sets whether or not exp should be bottled
-		miner.bottleEXP(entitySettings.getBoolean("Bottle_EXP"));
-	}
+        miner.bottleEXP(entitySettings.getBoolean("Bottle_EXP"));
+    }
 
-	// * Loads the saved data of the minion into the miner
-	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-	public void onLoadSavedMinerData(LoadSavedMinionDataEvent event) {
-		Minion minion = event.getMinion();
-		if (!(minion instanceof Miner))
-			return;
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onLoadSavedMinerData(LoadSavedMinionDataEvent event) {
+        Minion minion = event.getMinion();
+        if (!(minion instanceof Miner))
+            return;
 
-		Miner miner = (Miner) minion;
+        Miner miner = (Miner) minion;
 
-		if (event.getMinionItem() != null) {
-			ItemStack minionItem = event.getMinionItem();
-			NBTUtility nbt = NBTUtility.get();
-			NBTMethods nbtMethods = NBTMethods.get();
+        if (event.getMinionItem() != null) {
+            ItemStack minionItem = event.getMinionItem();
+            NBTUtility nbt = NBTUtility.get();
+            NBTMethods nbtMethods = NBTMethods.get();
 
-			if (nbtMethods.hasKey(minionItem, "BlocksMined"))
-				miner.setBlocksMined((int) nbt.getTagObject(minionItem, "BlocksMined"));
-		}
+            if (nbtMethods.hasKey(minionItem, "BlocksMined"))
+                miner.setBlocksMined((int) nbt.getTagObject(minionItem, "BlocksMined"));
+        }
 
-		if (event.getData() == null)
-			return;
-		JSONObject jsonData = ConversionMethods.parseString(event.getData());
-		if (jsonData == null)
-			return;
+        if (event.getData() == null)
+            return;
+        
+        JSONObject jsonData = ConversionMethods.parseString(event.getData());
+        if (jsonData == null)
+            return;
 
-		// * Checks for saved blocks mined
-		if (jsonData.containsKey("BlocksMined"))
-			miner.setBlocksMined(Integer.valueOf(jsonData.get("BlocksMined").toString()));
-	}
+        if (jsonData.containsKey("BlocksMined"))
+            miner.setBlocksMined(Integer.valueOf(jsonData.get("BlocksMined").toString()));
+    }
 }

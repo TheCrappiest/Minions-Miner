@@ -1,26 +1,24 @@
 package com.thecrappiest.minions.miner.listeners.miniontask;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Container;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.thecrappiest.minions.Core;
 import com.thecrappiest.minions.events.MinionPerformTaskEvent;
 import com.thecrappiest.minions.maps.miniondata.MinionData;
+import com.thecrappiest.minions.methods.DropsUsage;
 import com.thecrappiest.minions.methods.MinionEntityMethods;
 import com.thecrappiest.minions.miner.MinerCore;
 import com.thecrappiest.minions.miner.events.MinerBreakBlockAttemptEvent;
@@ -33,160 +31,100 @@ import com.thecrappiest.versionclasses.VersionMaterial;
 
 public class PerformMinerTask implements Listener {
 
-	public MinerCore minerCore;
-	public PerformMinerTask(MinerCore minerCore) {
-		this.minerCore = minerCore;
-		Bukkit.getPluginManager().registerEvents(this, minerCore);
-	}
-	
-	@SuppressWarnings("deprecation")
-	@EventHandler(ignoreCancelled = true)
-	public void onPerformTask(MinionPerformTaskEvent event) {
-		
-		// * Sets variables used in the event
-		Minion minion = event.getMinion();
-		MinionInventory minionInv = MinionData.getInstance().getInventoryForMinion(minion);
-		ArmorStand as = (ArmorStand) minion.getEntity();
-		Location minionLocation = as.getLocation();
-		BlockFace facing = BlockFace.valueOf(MinionEntityMethods.getDirection(minion));
-		
-		int brokenBlocks = 0;
-		
-		if(!(minion instanceof Miner)) 
-			return;
-		
-		// * Sets variable for miner object
-		Miner miner = (Miner) minion;
-		
-		// * Sets block variables
-		List<Block> mineable = new ArrayList<>();
-		for(int i = 0; i < miner.getRadius(); i++)
-			mineable.add(mineable.isEmpty() ? minionLocation.getBlock().getRelative(facing) : mineable.get(i-1).getRelative(facing));
-		
-		if(mineable.isEmpty())
-			return;
-		
-		// * Checking if linked chest is available and apply variables
-		Location linkedChest = minion.getLinkedChest("Link_Chest");
-		Inventory chestInventory = null;
-		
-		if(linkedChest != null) {
-			Block chestBlock = linkedChest.getBlock();
-			if(chestBlock.getType() == Material.CHEST || chestBlock.getType() == Material.TRAPPED_CHEST) {
-				BlockState state = chestBlock.getState();
-				if(Core.isLegacy()) {
-					Chest chest = (Chest) state;
-					chestInventory = chest.getInventory();
-				}else {
-					chestInventory = ((Container) state).getInventory();
-				}
-			}
-		}
-		
-		// * List of collected items from blocks
-		List<ItemStack> blockDrops = new ArrayList<>();
-		
-		// * Creating variable for minions held item
-		ItemStack heldItem = Core.isLegacy() ? as.getEquipment().getItemInHand() : as.getEquipment().getItemInMainHand();
-		
-		// * Loops through retrieved blocks
-		for(Block block : mineable) {
-			// * Continues if block type is not whitelisted
-			Material blockType = block.getType();
-			if(!miner.getMineableBlocks().contains(blockType))
-				continue;
-			
-			// * Continues if block doesn't drop items
-			Collection<ItemStack> drops = block.getDrops(heldItem);
-			if(drops == null || (drops != null && drops.isEmpty()))
-				continue;
-			
-			// * Creates and calls the MinerBreakBlockAttemptEvent (Allows other plugins to know a miner is attempting to break the block)
-			MinerBreakBlockAttemptEvent minerbba = new MinerBreakBlockAttemptEvent(block, minion);
-			Bukkit.getPluginManager().callEvent(minerbba);
+    public PerformMinerTask(MinerCore minerCore) {
+        Bukkit.getPluginManager().registerEvents(this, minerCore);
+    }
 
-			// * Continues if the break block attempt was cancelled
-			if(minerbba.isCancelled()) 
-				continue;
-			
-			// * Tests if block is stacked by supported hooks
-			boolean removeStacked = SuperiorSBHook.instance().removeStackedBlock(block);
-			
-			// * Gets exp amount from the block type
-			int expFromBlock = miner.getEXPForBlock(blockType);
-			miner.setEXP(miner.getCollectedEXP() + expFromBlock);
-			
-			// * Breaks block or sets to air while also collecting drops
-			if(removeStacked) {
-				if(chestInventory != null) {
-					blockDrops.addAll(drops);
-					block.setType(Material.AIR);
-				}else {
-					block.breakNaturally(heldItem);
-				}
-			}else {
-				blockDrops.addAll(drops);
-			}
-			
-			// * Sends block updates to supported hooks
-			HookManager.getInstance().sendBlockUpdateToSupports(block, true, minion);
-			
-			brokenBlocks++;
-		}
-		
-		// * Returns if no blocks were mined
-		if(brokenBlocks == 0)
-			return;
-		
-		// * Bottles of exp the miner can provide
-		int bottleCount = 0;
-		
-		// * Sets whether the miner should bottle exp or just collect it
-		boolean shouldBottle = miner.shouldBottleEXP();
-		if(shouldBottle) {
-			int currentEXP = miner.getCollectedEXP();
-			if(currentEXP >= 5) {
-				bottleCount = currentEXP/5;
-				miner.setEXP(currentEXP-bottleCount);
-			}
-			
-			ItemStack expBottle = VersionMaterial.EXPERIENCE_BOTTLE.getItemStack();
-			int max = expBottle.getMaxStackSize();
-			
-			if(bottleCount > max) {
-				int stackAmount = bottleCount/max;
-				int stacksUsed = 0;
-				for(int sa = 0; sa < stackAmount; sa++) {
-					expBottle.setAmount(max);
-					blockDrops.add(expBottle);
-					stacksUsed++;
-				}
-				expBottle.setAmount(bottleCount-((stacksUsed)*max));
-				if(expBottle.getAmount() > 0)
-					blockDrops.add(expBottle);
-			}
-		}
-		
-		if(!blockDrops.isEmpty()) {
-			for(ItemStack item : blockDrops) {
-				if(chestInventory != null && chestInventory.firstEmpty() != -1)
-					chestInventory.addItem(item);
-				else
-					minionLocation.getWorld().dropItem(minionLocation, item);
-			}
-		}
-		
-		// * Takes hunger from minion (Nothing affected if hunger is disabled)
-		minion.takeHunger();
-		
-		// * Adds 1 to blocks mined
-		miner.setBlocksMined(miner.getBlocksMined()+brokenBlocks);
-		minion.setPlaceHolder("%minion_blocksmined%", String.valueOf(miner.getBlocksMined()));
-		
-		// * If an inventory exists and a player is viewing it the items will be updated
-		if(minionInv != null && !minionInv.getInventory().getViewers().isEmpty()) {
-			minionInv.updateInventoryItems();
-		}
-	}
-	
+    private MinionData minionData = MinionData.getInstance();
+    private HookManager hookManager = HookManager.getInstance();
+    
+    @SuppressWarnings("deprecation")
+    @EventHandler
+    public void onPerformTask(MinionPerformTaskEvent event) {
+        
+        Minion minion = event.getMinion();
+        if(!(minion instanceof Miner))
+            return;
+        
+        Miner miner = (Miner) minion;
+        ArmorStand as = (ArmorStand) miner.getEntity();
+        ItemStack heldItem = Core.isLegacy() ? as.getEquipment().getItemInHand() : as.getEquipment().getItemInMainHand();
+        
+        Location minionLocation = as.getLocation();
+        Location chestLocation = miner.getLinkedChest("Link_Chest");
+        BlockFace facing = BlockFace.valueOf(MinionEntityMethods.getDirection(miner));
+        MinionInventory minionInventory = minionData.getInventoryForMinion(miner);
+        List<Material> mineable = miner.getMineableBlocks();
+        
+        int blocksBroken = 0;
+        Map<ItemStack, Integer> drops = new HashMap<>();
+        
+        Block lastBlock = null;
+        for(int i = 0; i < miner.getRadius(); i++) {
+            Block current = lastBlock == null ? minionLocation.getBlock().getRelative(facing) : lastBlock.getRelative(facing);
+            Material blockType = current.getType();
+            
+            lastBlock = current;
+            
+            if(!mineable.isEmpty() && !mineable.contains(blockType))
+                continue;
+            
+            Collection<ItemStack> blockDrops = current.getDrops(heldItem);
+            if(blockDrops == null || blockDrops.isEmpty())
+                continue;
+            
+            MinerBreakBlockAttemptEvent minerbba = new MinerBreakBlockAttemptEvent(current, minion);
+            Bukkit.getPluginManager().callEvent(minerbba);
+            
+            if(minerbba.isCancelled())
+                continue;
+            
+            int expFromBlock = miner.getEXPForBlock(blockType);
+            miner.setEXP(miner.getCollectedEXP() + expFromBlock);
+            
+            boolean removeStacked = SuperiorSBHook.instance().removeStackedBlock(current);
+            
+            if(removeStacked) {
+                if(chestLocation != null) {
+                    blockDrops.forEach(item -> drops.put(item, drops.containsKey(item) ? drops.get(item) + item.getAmount() : item.getAmount()));
+                    current.setType(Material.AIR);
+                }else {
+                    current.breakNaturally(heldItem);
+                }
+            }else {
+                blockDrops.forEach(item -> drops.put(item, drops.containsKey(item) ? drops.get(item) + item.getAmount() : item.getAmount()));
+            }
+            
+            hookManager.sendBlockUpdateToSupports(current, true, minion);
+            blocksBroken++;
+        }
+        
+        if(blocksBroken == 0)
+            return;
+        
+        int bottleCount = 0;
+        boolean shouldBottle = miner.shouldBottleEXP();
+        
+        if(shouldBottle) {
+            int currentEXP = miner.getCollectedEXP();
+            if(currentEXP >= 5) {
+                bottleCount = currentEXP/5;
+                miner.setEXP(currentEXP-(bottleCount*5));
+            }
+            
+            ItemStack expBottle = VersionMaterial.EXPERIENCE_BOTTLE.getItemStack();
+            drops.put(expBottle, bottleCount);
+        }
+        
+        if(!drops.isEmpty())
+            DropsUsage.getInstance().addItemToChest(drops, minion);
+
+        minion.takeHunger();
+        
+        miner.setBlocksMined(miner.getBlocksMined()+blocksBroken);
+        minion.setPlaceHolder("%minion_blocksmined%", String.valueOf(miner.getBlocksMined()));
+        
+        if(minionInventory != null && !minionInventory.getInventory().getViewers().isEmpty())
+            minionInventory.updateInventoryItems();
+    }
 }
